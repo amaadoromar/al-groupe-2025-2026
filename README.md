@@ -8,12 +8,6 @@ Ce dépôt contient un prototype front (HTML/CSS/JS sans dépendances) qui démo
 - Système d’alertes (seuils critiques) avec notifications navigateur et son
 - Génération d’un rapport imprimable/exportable en PDF (via impression navigateur)
 
-Fichiers clefs:
-- `frontend/index.html`: page principale SPA
-- `frontend/styles.css`: styles, y compris styles d’impression
-- `frontend/app.js`: logique de l’application et simulation
-- `AL Projet - esanté - 2025_2026.pdf`: document de référence fourni
-
 Utilisation:
 1) Ouvrir `frontend/index.html` dans un navigateur moderne (Chrome/Edge/Firefox).
 2) Onglet Administration: créer un patient (au minimum prénom, nom, date de naissance).
