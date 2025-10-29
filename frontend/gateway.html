@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Passerelle</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/gateway.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="gateway.html">Passerelle</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+      </nav>
+    </header>
+
+    <main>
+      <section>
+        <h2>Passerelle (smartphone) – Simulation capteurs</h2>
+        <div class="card">
+          <div class="row">
+            <div>
+              <label for="gw-patient">Patient cible</label>
+              <select id="gw-patient"></select>
+            </div>
+            <div class="row gap">
+              <button id="gw-start">Démarrer</button>
+              <button id="gw-stop" class="secondary">Arrêter</button>
+              <button id="gw-spike" class="warn">Forcer alerte</button>
+            </div>
+            <div class="spacer"></div>
+            <label class="switch">
+              <input type="checkbox" id="gw-random" checked />
+              <span>Données réalistes</span>
+            </label>
+          </div>
+          <div class="grid-3 stats">
+            <div class="stat">
+              <div>Rythme cardiaque</div>
+              <div id="gw-hr" class="value">— bpm</div>
+            </div>
+            <div class="stat">
+              <div>SpO₂</div>
+              <div id="gw-spo2" class="value">— %</div>
+            </div>
+            <div class="stat">
+              <div>Température</div>
+              <div id="gw-temp" class="value">— °C</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="./js/gateway.js"></script>
+  </body>
+  </html>
+

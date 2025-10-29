@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Administration</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="gateway.html">Passerelle</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+      </nav>
+    </header>
+
+    <main>
+      <section>
+        <h2>Gestion des patients</h2>
+        <form id="patient-form" class="card form-grid">
+          <div>
+            <label for="prenom">Prénom</label>
+            <input id="prenom" required />
+          </div>
+          <div>
+            <label for="nom">Nom</label>
+            <input id="nom" required />
+          </div>
+          <div>
+            <label for="naissance">Date de naissance</label>
+            <input id="naissance" type="date" required />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" type="email" />
+          </div>
+          <div>
+            <label for="dossier">N° de dossier</label>
+            <input id="dossier" />
+          </div>
+          <div class="actions">
+            <button type="submit">Créer le compte</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <div class="list-header">
+            <div>Patients</div>
+            <div class="spacer"></div>
+            <input id="search" placeholder="Rechercher…" />
+          </div>
+          <ul id="patients-list" class="list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="./js/admin.js"></script>
+  </body>
+  </html>
+
