@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # --- BASES DE DONNÉES ---
   postgres:
     image: postgres:15
     container_name: postgres_db
@@ -30,3 +31,46 @@ services:
       DOCKER_INFLUXDB_INIT_PASSWORD: admin123
       DOCKER_INFLUXDB_INIT_ORG: eSanteIdb
       DOCKER_INFLUXDB_INIT_BUCKET: mesure_data
+
+  # --- MICRO-SERVICES ---
+  monitoring-service:
+    build: ./backend/monitoring-service
+    container_name: monitoring_service
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eSantePg
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_INFLUX_URL: http://influxdb:8086
+      SPRING_INFLUX_ORG: eSanteIdb
+      SPRING_INFLUX_BUCKET: mesure_data
+      SPRING_INFLUX_TOKEN: admin123
+    depends_on:
+      - postgres
+      - influxdb
+
+  reporting-service:
+    build: ./backend/reporting-service
+    container_name: reporting_service
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eSantePg
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    depends_on:
+      - postgres
+
+  notification-service:
+    build: ./backend/notification-service
+    container_name: notification_service
+    restart: always
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:notifications;DB_CLOSE_DELAY=-1
+    depends_on:
+      - postgres

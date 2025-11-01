@@ -1,5 +1,6 @@
 # Java / Spring Boot
 /target/
+/data/
 /*.iml
 .idea/
 /.classpath
