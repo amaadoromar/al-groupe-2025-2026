@@ -31,6 +31,9 @@ public class Patient {
     @Column(name = "pathologie_principale", length = 255)
     private String pathologiePrincipale;
 
+    @Column(name = "form_json")
+    private String formJson;
+
     public Integer getId() { return id; }
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
@@ -44,5 +47,7 @@ public class Patient {
     public void setPoidsKg(BigDecimal poidsKg) { this.poidsKg = poidsKg; }
     public String getPathologiePrincipale() { return pathologiePrincipale; }
     public void setPathologiePrincipale(String pathologiePrincipale) { this.pathologiePrincipale = pathologiePrincipale; }
+    public String getFormJson() { return formJson; }
+    public void setFormJson(String formJson) { this.formJson = formJson; }
 }
 

@@ -77,11 +77,11 @@ export function applyRoleNav() {
   const nav = document.querySelector('.nav');
   if (!nav || !user) return;
   const role = user.role;
-  // Hide admin link if not ADMIN
   nav.querySelectorAll('a').forEach(a => {
-    if (a.getAttribute('href') === 'admin.html' && role !== 'ADMIN') {
-      a.style.display = 'none';
-    }
+    const href = a.getAttribute('href');
+    if (href === 'admin.html' && role !== 'ADMIN') a.style.display = 'none';
+    if (href === 'doctor.html' && !(role === 'DOCTEUR' || role === 'INFIRMIER' || role === 'ADMIN')) a.style.display = 'none';
+    if (href === 'patient-form.html') a.style.display = 'none';
   });
 }
 
