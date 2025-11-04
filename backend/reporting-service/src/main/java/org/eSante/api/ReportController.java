@@ -2,16 +2,20 @@ package org.eSante.api;
 
 import org.eSante.domain.models.Report;
 import org.eSante.repositories.ReportRepository;
+import org.eSante.services.ReportGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.List;
 
+/**
+ * REST controller for managing medical reports (weekly, monthly, post-event).
+ * Supports generating and exporting reports in-memory as Base64-encoded PDFs.
+ */
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
@@ -20,70 +24,100 @@ public class ReportController {
     private ReportGeneratorService reportGeneratorService;
 
     @Autowired
-    private ReportRepository rapportRepository;
+    private ReportRepository reportRepository;
 
-    // GET /api/reports/patient/{id}?type=weekly
+    /**
+     *  Get all reports for a given patient, optionally filtered by type.
+     * Example:
+     *   GET /api/reports/patient/1
+     *   GET /api/reports/patient/1?type=weekly
+     */
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<Report>> getPatientReports(
-            @PathVariable Long patientId,
-            @RequestParam(required = false) String type) {
+            @PathVariable("patientId") Long patientId,
+            @RequestParam(value = "type", required = false) String type) {
 
-        List<Report> rapports;
+        List<Report> reports;
         if (type != null) {
-            rapports = rapportRepository.findByPatientIdAndReportType(
+            reports = reportRepository.findByPatientIdAndReportType(
                     patientId,
                     type.toUpperCase()
             );
         } else {
-            rapports = rapportRepository.findByPatientIdOrderByReportDateDesc(patientId);
+            reports = reportRepository.findByPatientIdOrderByReportDateDesc(patientId);
         }
 
-        return ResponseEntity.ok(rapports);
+        return ResponseEntity.ok(reports);
     }
 
-    // POST /api/reports/generate
+    /**
+     *  Generate a new report (weekly or monthly)
+     * Example:
+     *   POST /api/reports/generate?patientId=1&type=WEEKLY
+     */
     @PostMapping("/generate")
     public ResponseEntity<Report> generateReport(
-            @RequestParam Long patientId,
-            @RequestParam String type) {
+            @RequestParam("patientId") Long patientId,
+            @RequestParam("type") String type) {
 
-        Report rapport;
+        Report report;
         switch (type.toUpperCase()) {
             case "WEEKLY":
-                rapport = reportGeneratorService.generateWeeklyReport(patientId);
+                report = reportGeneratorService.generateWeeklyReport(patientId);
                 break;
             case "MONTHLY":
-                rapport = reportGeneratorService.generateMonthlyReport(patientId);
+                report = reportGeneratorService.generateMonthlyReport(patientId);
                 break;
             default:
                 return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(rapport);
+        return ResponseEntity.ok(report);
     }
 
-    // GET /api/reports/{id}/export?format=pdf
+    /**
+     *  Export a generated report as PDF (stored in Base64 format)
+     * Example:
+     *   GET /api/reports/1/export
+     */
     @GetMapping("/{reportId}/export")
-    public ResponseEntity<Resource> exportReport(
-            @PathVariable Long reportId,
-            @RequestParam(defaultValue = "pdf") String format) {
-
-        Report rapport = rapportRepository.findById(reportId)
+    public ResponseEntity<byte[]> exportReport(@PathVariable("reportId") Long reportId) {
+        Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Rapport non trouvé"));
 
-        String[] paths = rapport.getFilePath().split(";");
-        String filePath = format.equalsIgnoreCase("csv") && paths.length > 1 ? paths[1] : paths[0];
+        // Vérifie que le contenu est bien au format PDF Base64
+        if (report.getContent() == null || report.getContent().isEmpty()) {
+            throw new RuntimeException("Aucun contenu PDF disponible pour ce rapport.");
+        }
 
-        Resource resource = new FileSystemResource(filePath);
-
-        MediaType mediaType = format.equalsIgnoreCase("csv")
-                ? MediaType.parseMediaType("text/csv")
-                : MediaType.APPLICATION_PDF;
+        byte[] pdfBytes;
+        try {
+            pdfBytes = Base64.getDecoder().decode(report.getContent());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Erreur lors du décodage du PDF Base64 : " + e.getMessage());
+        }
 
         return ResponseEntity.ok()
-                .contentType(mediaType)
+                .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+                        "inline; filename=report_" + reportId + ".pdf")
+                .body(pdfBytes);
+    }
+
+    /**
+     *  (Optionnel) Export raw Base64 string (for frontend direct rendering)
+     * Example:
+     *   GET /api/reports/1/base64
+     */
+    @GetMapping("/{reportId}/base64")
+    public ResponseEntity<String> getReportAsBase64(@PathVariable("reportId") Long reportId) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Rapport non trouvé"));
+
+        if (report.getContent() == null || report.getContent().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(report.getContent());
     }
 }

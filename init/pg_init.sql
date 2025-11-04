@@ -34,7 +34,7 @@ CREATE TABLE proches (
                          id SERIAL PRIMARY KEY,
                          utilisateur_id INT UNIQUE NOT NULL REFERENCES utilisateurs(id) ON DELETE CASCADE,
                          patient_id INT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-                         lien VARCHAR(100) -- Exemple : "fille", "conjoint", "ami"
+                         lien VARCHAR(100)
 );
 
 -- ====================================================
@@ -64,16 +64,21 @@ CREATE TABLE alertes (
 );
 
 -- ====================================================
--- 5. RAPPORTS & BILANS
+-- 5. RAPPORTS & BILANS (✅ corrigé pour correspondre à la classe Report.java)
 -- ====================================================
 
-CREATE TABLE rapports (
-                          id SERIAL PRIMARY KEY,
-                          patient_id INT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-                          type_rapport VARCHAR(100),
-                          contenu TEXT,
-                          date_rapport TIMESTAMP DEFAULT NOW()
-);
+CREATE TABLE IF NOT EXISTS reports (
+                                       id SERIAL PRIMARY KEY,
+                                       patient_id INT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    report_type VARCHAR(100),
+    content TEXT,
+    report_date TIMESTAMP DEFAULT NOW(),
+    period_start TIMESTAMP,
+    period_end TIMESTAMP,
+    export_format VARCHAR(50),
+    file_path VARCHAR(500),
+    status VARCHAR(20) DEFAULT 'GENERATING'
+    );
 
 -- ====================================================
 -- 6. DONNÉES D'INITIALISATION
@@ -87,33 +92,57 @@ INSERT INTO roles (nom) VALUES
                             ('PATIENT'),
                             ('PROCHE');
 
--- Utilisateurs : un admin, un docteur, un patient et un proche
+--- Utilisateurs
 INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role_id) VALUES
-                                                                         ('Najar', 'Sarra', 'sarra.najar@example.com', 'pass', 1),         -- ADMIN
-                                                                         ('Martin', 'Lucas', 'lucas.martin@example.com', 'pass', 2),       -- DOCTEUR
-                                                                         ('Dupont', 'Alice', 'alice.dupont@example.com', 'pass', 4),       -- PATIENT
-                                                                         ('Durand', 'Emma', 'emma.durand@example.com', 'pass', 5);         -- PROCHE
+                                                                         ('Admin', 'Système', 'admin@esante.com', 'admin123', 1),
+                                                                         ('Martin', 'Jean', 'jean.martin@esante.com', 'pass123', 2),
+                                                                         ('Dubois', 'Sophie', 'sophie.dubois@esante.com', 'pass123', 2),
+                                                                         ('Bernard', 'Pierre', 'pierre.bernard@esante.com', 'pass123', 2),
+                                                                         ('Petit', 'Marie', 'marie.petit@esante.com', 'pass123', 2),
+                                                                         ('Robert', 'Luc', 'luc.robert@esante.com', 'pass123', 2),
+                                                                         ('Lefebvre', 'Claire', 'claire.lefebvre@esante.com', 'pass123', 3),
+                                                                         ('Moreau', 'Thomas', 'thomas.moreau@esante.com', 'pass123', 3),
+                                                                         ('Simon', 'Julie', 'julie.simon@esante.com', 'pass123', 3),
+                                                                         ('Laurent', 'Marc', 'marc.laurent@esante.com', 'pass123', 3),
+                                                                         ('Michel', 'Anne', 'anne.michel@esante.com', 'pass123', 3),
+                                                                         ('Dupont', 'Alice', 'alice.dupont@patient.com', 'pass123', 4),
+                                                                         ('Durand', 'Bob', 'bob.durand@patient.com', 'pass123', 4),
+                                                                         ('Lemoine', 'Charles', 'charles.lemoine@patient.com', 'pass123', 4),
+                                                                         ('Roux', 'Denise', 'denise.roux@patient.com', 'pass123', 4),
+                                                                         ('Garnier', 'Émile', 'emile.garnier@patient.com', 'pass123', 4),
+                                                                         ('Faure', 'Françoise', 'francoise.faure@patient.com', 'pass123', 4),
+                                                                         ('André', 'Georges', 'georges.andre@patient.com', 'pass123', 4),
+                                                                         ('Mercier', 'Hélène', 'helene.mercier@patient.com', 'pass123', 4),
+                                                                         ('Blanc', 'Isabelle', 'isabelle.blanc@patient.com', 'pass123', 4),
+                                                                         ('Guerin', 'Jacques', 'jacques.guerin@patient.com', 'pass123', 4),
+                                                                         ('Boyer', 'Karine', 'karine.boyer@patient.com', 'pass123', 4),
+                                                                         ('Girard', 'Louis', 'louis.girard@patient.com', 'pass123', 4),
+                                                                         ('Vincent', 'Martine', 'martine.vincent@patient.com', 'pass123', 4),
+                                                                         ('Rousseau', 'Nicolas', 'nicolas.rousseau@patient.com', 'pass123', 4),
+                                                                         ('Leroy', 'Odette', 'odette.leroy@patient.com', 'pass123', 4),
+                                                                         ('Bonnet', 'Pascal', 'pascal.bonnet@patient.com', 'pass123', 4),
+                                                                         ('François', 'Quentin', 'quentin.francois@patient.com', 'pass123', 4),
+                                                                         ('Martinez', 'Rose', 'rose.martinez@patient.com', 'pass123', 4),
+                                                                         ('David', 'Sylvie', 'sylvie.david@patient.com', 'pass123', 4),
+                                                                         ('Bertrand', 'Thierry', 'thierry.bertrand@patient.com', 'pass123', 4),
+                                                                         ('Dupont', 'Emma', 'emma.dupont@proche.com', 'pass123', 5),
+                                                                         ('Durand', 'Léa', 'lea.durand@proche.com', 'pass123', 5);
 
--- Patients (liés à leurs utilisateurs)
+-- Patients
 INSERT INTO patients (utilisateur_id, date_naissance, sexe, taille_cm, poids_kg, pathologie_principale) VALUES
-                                                                                                            (3, '1960-04-12', 'F', 168, 72.8, 'Hypertension'),
-                                                                                                            (2, '1955-09-23', 'M', 182, 85.4, 'Diabète'); -- le docteur aussi peut être suivi en tant que patient pour test
+                                                                                                            (11, '1955-03-15', 'F', 165, 68.5, 'Hypertension'),
+                                                                                                            (12, '1960-07-22', 'M', 178, 82.3, 'Diabète Type 2'),
+                                                                                                            (13, '1948-11-30', 'M', 172, 75.0, 'Insuffisance Cardiaque'),
+                                                                                                            (14, '1952-05-18', 'F', 160, 65.0, 'Hypertension + Diabète'),
+                                                                                                            (15, '1958-09-08', 'M', 180, 90.5, 'Obésité'),
+                                                                                                            (16, '1945-02-14', 'F', 158, 60.0, 'Ostéoporose'),
+                                                                                                            (17, '1950-12-25', 'M', 175, 78.0, 'BPCO'),
+                                                                                                            (18, '1963-04-11', 'F', 168, 72.0, 'Asthme'),
+                                                                                                            (19, '1957-08-19', 'F', 162, 66.0, 'Arthrose'),
+                                                                                                            (20, '1949-10-03', 'M', 170, 80.0, 'Hypertension');
 
--- Proches liés à un patient
-INSERT INTO proches (utilisateur_id, patient_id, lien) VALUES
-    (4, 1, 'fille');
-
--- Rendez-vous pour les patients
-INSERT INTO rendez_vous (patient_id, date_rdv, type_rdv, commentaire) VALUES
-                                                                          (1, NOW() + INTERVAL '3 days', 'Suivi tension', 'Vérification du traitement'),
-                                                                          (2, NOW() + INTERVAL '5 days', 'Contrôle glycémie', 'Bilan post-repas');
-
--- Alertes sur les patients
-INSERT INTO alertes (patient_id, type_alerte, niveau, message) VALUES
-                                                                   (1, 'Tension élevée', 'ALERTE', 'SBP > 160 détecté à 08:45'),
-                                                                   (2, 'Glycémie critique', 'URGENCE', 'Valeur > 300 mg/dL');
-
--- Rapports médicaux
-INSERT INTO rapports (patient_id, type_rapport, contenu) VALUES
-                                                             (1, 'Bilan tension', 'Pression moyenne : 145/95 mmHg'),
-                                                             (2, 'Bilan glycémie', 'Moyenne glycémie : 180 mg/dL');
+-- Rapports déjà générés
+INSERT INTO reports (patient_id, report_type, content, report_date, period_start, period_end, export_format, file_path, status) VALUES
+                                                                                                                                    (1, 'WEEKLY', 'Rapport hebdomadaire patient 1', NOW() - INTERVAL '1 week', NOW() - INTERVAL '14 days', NOW() - INTERVAL '7 days', 'PDF', '/reports/weekly_1_20250101.pdf', 'READY'),
+                                                                                                                                    (2, 'WEEKLY', 'Rapport hebdomadaire patient 2', NOW() - INTERVAL '1 week', NOW() - INTERVAL '14 days', NOW() - INTERVAL '7 days', 'PDF', '/reports/weekly_2_20250101.pdf', 'READY'),
+                                                                                                                                    (1, 'MONTHLY', 'Rapport mensuel patient 1', NOW() - INTERVAL '1 month', NOW() - INTERVAL '60 days', NOW() - INTERVAL '30 days', 'PDF,CSV', '/reports/monthly_1_20241201.pdf;/reports/monthly_1_20241201.csv', 'READY');

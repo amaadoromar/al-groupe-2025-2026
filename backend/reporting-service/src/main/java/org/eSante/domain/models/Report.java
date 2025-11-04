@@ -38,6 +38,9 @@ public class Report {
     @Column(name = "status")
     private String status; // GENERATING, READY, ERROR
 
+    @Transient
+    private String summary;
+
     // Constructors, getters, setters
     public Report() {}
 
@@ -127,5 +130,13 @@ public class Report {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 }

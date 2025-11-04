@@ -10,6 +10,8 @@ public class ReportData {
     private LocalDateTime periodStart;
     private LocalDateTime periodEnd;
 
+    private String patientName;
+
     // Aggregated vital signs data
     private VitalSignsStats heartRateStats;
     private VitalSignsStats spo2Stats;
@@ -61,6 +63,14 @@ public class ReportData {
 
     public void setPeriodEnd(LocalDateTime periodEnd) {
         this.periodEnd = periodEnd;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
     }
 
     public VitalSignsStats getHeartRateStats() {
