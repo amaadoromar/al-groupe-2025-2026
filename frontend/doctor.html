@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Médecin</title>
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="doctor.html" class="active">Médecin</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+        <a href="connectivity.html">Connectivité</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Patients</h2>
+        <div class="row">
+          <label for="doc-patient">Sélectionner un patient</label>
+          <select id="doc-patient"></select>
+          <div class="spacer"></div>
+          <button id="btn-load-form">Charger formulaire</button>
+          <button id="btn-load-obs">Charger observations</button>
+        </div>
+      </section>
+
+      <section class="grid-2">
+        <div class="card">
+          <h3>Formulaire patient</h3>
+          <textarea id="patient-form" rows="12" style="width:100%"></textarea>
+          <div class="actions"><button id="btn-save-form">Enregistrer le formulaire</button></div>
+        </div>
+        <div class="card">
+          <h3>Ajouter une note/question</h3>
+          <div class="row gap">
+            <label for="obs-type">Type</label>
+            <select id="obs-type"><option value="NOTE">Note</option><option value="QUESTION">Question</option></select>
+          </div>
+          <textarea id="obs-content" rows="6" placeholder="Observation ou question..."></textarea>
+          <div class="actions"><button id="btn-add-obs">Ajouter</button></div>
+          <h3>Observations</h3>
+          <ul id="obs-list" class="list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script type="module">import { ensureAuth, getUser } from './js/auth.js'; ensureAuth(['DOCTEUR','ADMIN']);</script>
+    <script type="module" src="./js/doctor.js"></script>
+  </body>
+  </html>

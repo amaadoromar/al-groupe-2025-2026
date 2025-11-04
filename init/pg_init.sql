@@ -80,6 +80,21 @@ CREATE TABLE IF NOT EXISTS reports (
     status VARCHAR(20) DEFAULT 'GENERATING'
     );
 
+-- Observations for doctors (notes linked to patients)
+CREATE TABLE IF NOT EXISTS observations (
+    id SERIAL PRIMARY KEY,
+    patient_id INT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    author_user_id INT NOT NULL REFERENCES utilisateurs(id) ON DELETE CASCADE,
+    content TEXT,
+    kind VARCHAR(20) DEFAULT 'NOTE',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Extend patients with a JSON form filled by the patient
+DO $$ BEGIN
+    ALTER TABLE patients ADD COLUMN form_json TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+
 -- ====================================================
 -- 6. DONNÉES D'INITIALISATION
 -- ====================================================
@@ -146,3 +161,8 @@ INSERT INTO reports (patient_id, report_type, content, report_date, period_start
                                                                                                                                     (1, 'WEEKLY', 'Rapport hebdomadaire patient 1', NOW() - INTERVAL '1 week', NOW() - INTERVAL '14 days', NOW() - INTERVAL '7 days', 'PDF', '/reports/weekly_1_20250101.pdf', 'READY'),
                                                                                                                                     (2, 'WEEKLY', 'Rapport hebdomadaire patient 2', NOW() - INTERVAL '1 week', NOW() - INTERVAL '14 days', NOW() - INTERVAL '7 days', 'PDF', '/reports/weekly_2_20250101.pdf', 'READY'),
                                                                                                                                     (1, 'MONTHLY', 'Rapport mensuel patient 1', NOW() - INTERVAL '1 month', NOW() - INTERVAL '60 days', NOW() - INTERVAL '30 days', 'PDF,CSV', '/reports/monthly_1_20241201.pdf;/reports/monthly_1_20241201.csv', 'READY');
+
+DO  BEGIN
+    ALTER TABLE observations ADD COLUMN kind VARCHAR(20) DEFAULT 'NOTE';
+EXCEPTION WHEN duplicate_column THEN NULL; END ;
+

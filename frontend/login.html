@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Connexion</title>
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <main style="max-width:480px;margin:40px auto">
+      <h2>Connexion</h2>
+      <form id="login-form" class="card form-grid">
+        <div>
+          <label>Email</label>
+          <input id="email" type="email" required value="admin@esante.com" />
+        </div>
+        <div>
+          <label>Mot de passe</label>
+          <input id="password" type="password" required value="admin123" />
+        </div>
+        <div class="actions" style="grid-column:1 / -1">
+          <button type="submit">Se connecter</button>
+        </div>
+      </form>
+      <div id="msg" class="card" style="margin-top:12px"></div>
+    </main>
+
+    <script type="module" src="./js/login.js"></script>
+  </body>
+  </html>
+
