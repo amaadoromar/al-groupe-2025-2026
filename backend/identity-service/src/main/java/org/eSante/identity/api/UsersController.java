@@ -36,7 +36,7 @@ public class UsersController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> list(@RequestParam(required = false) String role) {
+    public ResponseEntity<List<UserResponse>> list(@RequestParam(name = "role", required = false) String role) {
         List<UserResponse> list = userService.listByRole(role).stream().map(u -> {
             UserResponse r = new UserResponse();
             r.id = u.getId();

@@ -12,5 +12,11 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
 
     @Query("select u from Utilisateur u join fetch u.role where u.email = :email")
     Optional<Utilisateur> findByEmailWithRole(@Param("email") String email);
+
+    @Query("select u from Utilisateur u join fetch u.role")
+    java.util.List<Utilisateur> findAllWithRole();
+
+    @Query("select u from Utilisateur u join fetch u.role where u.role.nom = :roleNom")
+    java.util.List<Utilisateur> findAllByRoleNom(@Param("roleNom") String roleNom);
 }
 

@@ -58,10 +58,10 @@ public class UserService implements UserDetailsService {
     }
 
     public List<Utilisateur> listByRole(String roleNom) {
-        if (roleNom == null || roleNom.trim().isEmpty()) return users.findAll();
-        // lightweight filter to avoid extra query methods
-        return users.findAll().stream().filter(u -> roleNom.equals(u.getRole().getNom()))
-                .collect(Collectors.toList());
+        if (roleNom == null || roleNom.trim().isEmpty()) {
+            return users.findAllWithRole();
+        }
+        return users.findAllByRoleNom(roleNom);
     }
 }
 
