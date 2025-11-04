@@ -3,6 +3,7 @@ package org.eSante.identity.api;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,8 +19,13 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("error", "validation_error");
         Map<String, String> fields = new HashMap<>();
-        for (var err : ex.getBindingResult().getAllErrors()) {
-            String field = err instanceof FieldError fe ? fe.getField() : err.getObjectName();
+        for (ObjectError err : ex.getBindingResult().getAllErrors()) {
+            String field;
+            if (err instanceof FieldError) {
+                field = ((FieldError) err).getField();
+            } else {
+                field = err.getObjectName();
+            }
             fields.put(field, err.getDefaultMessage());
         }
         body.put("fields", fields);

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.eSante.identity.domain.Utilisateur;
+import org.eSante.identity.domain.Patient;
 @RestController
 @RequestMapping("/api/proches")
 public class ProchesController {
@@ -27,13 +29,13 @@ public class ProchesController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Integer> create(@Valid @RequestBody ProcheCreateRequest req) {
-        var u = utilisateurs.findById(req.utilisateurId).orElseThrow(() -> new IllegalArgumentException("Utilisateur not found"));
-        var p = patients.findById(req.patientId).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        Utilisateur u = utilisateurs.findById(req.utilisateurId).orElseThrow(() -> new IllegalArgumentException("Utilisateur not found"));
+        Patient p = patients.findById(req.patientId).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
         Proche pr = new Proche();
         pr.setUtilisateur(u);
         pr.setPatient(p);
         pr.setLien(req.lien);
-        var saved = proches.save(pr);
+        Proche saved = proches.save(pr);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved.getId());
     }
 }

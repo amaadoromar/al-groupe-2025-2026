@@ -9,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import org.eSante.identity.domain.Utilisateur;
 
 @RestController
 @RequestMapping("/api/users")
@@ -22,8 +24,8 @@ public class UsersController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest req) {
-        var u = userService.createUser(req.nom, req.prenom, req.email, req.password, req.role);
-        var r = new UserResponse();
+        Utilisateur u = userService.createUser(req.nom, req.prenom, req.email, req.password, req.role);
+        UserResponse r = new UserResponse();
         r.id = u.getId();
         r.nom = u.getNom();
         r.prenom = u.getPrenom();
@@ -35,15 +37,15 @@ public class UsersController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> list(@RequestParam(required = false) String role) {
-        var list = userService.listByRole(role).stream().map(u -> {
-            var r = new UserResponse();
+        List<UserResponse> list = userService.listByRole(role).stream().map(u -> {
+            UserResponse r = new UserResponse();
             r.id = u.getId();
             r.nom = u.getNom();
             r.prenom = u.getPrenom();
             r.email = u.getEmail();
             r.role = u.getRole().getNom();
             return r;
-        }).toList();
+        }).collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
 }

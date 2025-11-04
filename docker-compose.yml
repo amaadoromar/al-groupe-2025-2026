@@ -88,6 +88,34 @@ services:
           condition: service_healthy
         influxdb:
           condition: service_healthy
+
+  identity-service:
+    build:
+      context: ./backend
+      dockerfile: identity-service/Dockerfile
+    container_name: identity_service
+    restart: always
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eSantePg
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      ID_JWT_SECRET: dev-secret-change-me
+      ID_JWT_ISSUER: eSante-identity
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: nginx:alpine
+    container_name: frontend
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    # Standalone static server; API calls go directly to :8084 from JS
 volumes:
     postgres_data:
     influxdb_data:

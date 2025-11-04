@@ -20,6 +20,7 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Collections;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -47,10 +48,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
                 String subject = claims.getSubject();
                 @SuppressWarnings("unchecked")
-                List<String> roles = (List<String>) claims.getOrDefault("roles", List.of());
+                List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.<String>emptyList());
                 Collection<SimpleGrantedAuthority> auths = new ArrayList<>();
                 for (String r : roles) auths.add(new SimpleGrantedAuthority("ROLE_" + r));
-                var authentication = new UsernamePasswordAuthenticationToken(subject, null, auths);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(subject, null, auths);
                 authentication.setDetails(claims);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception ignored) {}

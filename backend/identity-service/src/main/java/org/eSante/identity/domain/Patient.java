@@ -2,6 +2,7 @@ package org.eSante.identity.domain;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -24,8 +25,8 @@ public class Patient {
     @Column(name = "taille_cm")
     private Integer tailleCm;
 
-    @Column(name = "poids_kg")
-    private Double poidsKg;
+    @Column(name = "poids_kg", precision = 5, scale = 2)
+    private BigDecimal poidsKg;
 
     @Column(name = "pathologie_principale", length = 255)
     private String pathologiePrincipale;
@@ -39,8 +40,8 @@ public class Patient {
     public void setSexe(String sexe) { this.sexe = sexe; }
     public Integer getTailleCm() { return tailleCm; }
     public void setTailleCm(Integer tailleCm) { this.tailleCm = tailleCm; }
-    public Double getPoidsKg() { return poidsKg; }
-    public void setPoidsKg(Double poidsKg) { this.poidsKg = poidsKg; }
+    public BigDecimal getPoidsKg() { return poidsKg; }
+    public void setPoidsKg(BigDecimal poidsKg) { this.poidsKg = poidsKg; }
     public String getPathologiePrincipale() { return pathologiePrincipale; }
     public void setPathologiePrincipale(String pathologiePrincipale) { this.pathologiePrincipale = pathologiePrincipale; }
 }

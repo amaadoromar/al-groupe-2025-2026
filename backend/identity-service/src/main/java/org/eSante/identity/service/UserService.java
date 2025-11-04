@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -28,7 +29,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var u = users.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Utilisateur u = users.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         String roleName = u.getRole().getNom();
         return User.withUsername(u.getEmail())
                 .password(u.getMotDePasse())
@@ -57,9 +58,10 @@ public class UserService implements UserDetailsService {
     }
 
     public List<Utilisateur> listByRole(String roleNom) {
-        if (roleNom == null || roleNom.isBlank()) return users.findAll();
+        if (roleNom == null || roleNom.trim().isEmpty()) return users.findAll();
         // lightweight filter to avoid extra query methods
-        return users.findAll().stream().filter(u -> roleNom.equals(u.getRole().getNom())).toList();
+        return users.findAll().stream().filter(u -> roleNom.equals(u.getRole().getNom()))
+                .collect(Collectors.toList());
     }
 }
 

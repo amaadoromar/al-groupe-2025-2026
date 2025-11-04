@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Connectivité</title>
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="gateway.html">Passerelle</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+        <a href="connectivity.html" class="active">Connectivité</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card" style="max-width:780px;margin:auto">
+        <h2>Tester l’identity-service</h2>
+        <div class="form-grid">
+          <div style="grid-column:1 / -1">
+            <label for="baseUrl">Base URL</label>
+            <input id="baseUrl" value="http://localhost:8084" />
+          </div>
+
+          <div>
+            <label>Email</label>
+            <input id="email" value="admin@esante.com" />
+          </div>
+          <div>
+            <label>Mot de passe</label>
+            <input id="password" type="password" value="admin123" />
+          </div>
+          <div class="actions" style="grid-column:1 / -1">
+            <button id="btn-health">Tester /actuator/health</button>
+            <button id="btn-login">Login</button>
+            <button id="btn-me">/api/auth/me</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="list-header">
+            <div>Résultat</div>
+            <div class="spacer"></div>
+            <button id="btn-clear" class="link">Effacer</button>
+          </div>
+          <pre id="out" style="white-space:pre-wrap"></pre>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="./js/connectivity.js"></script>
+  </body>
+  </html>
+

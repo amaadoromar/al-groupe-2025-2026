@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
+import org.eSante.identity.domain.Utilisateur;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -26,17 +28,19 @@ public class PatientsController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Integer> create(@Valid @RequestBody PatientCreateRequest req) {
-        var user = utilisateurs.findById(req.utilisateurId).orElseThrow(() -> new IllegalArgumentException("Utilisateur not found"));
+        Utilisateur user = utilisateurs.findById(req.utilisateurId).orElseThrow(() -> new IllegalArgumentException("Utilisateur not found"));
         Patient p = new Patient();
         p.setUtilisateur(user);
-        if (req.dateNaissance != null && !req.dateNaissance.isBlank()) {
+        if (req.dateNaissance != null && !req.dateNaissance.trim().isEmpty()) {
             p.setDateNaissance(LocalDate.parse(req.dateNaissance));
         }
         p.setSexe(req.sexe);
         p.setTailleCm(req.tailleCm);
-        p.setPoidsKg(req.poidsKg);
+        if (req.poidsKg != null) {
+            p.setPoidsKg(BigDecimal.valueOf(req.poidsKg));
+        }
         p.setPathologiePrincipale(req.pathologiePrincipale);
-        var saved = patients.save(p);
+        Patient saved = patients.save(p);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved.getId());
     }
 }

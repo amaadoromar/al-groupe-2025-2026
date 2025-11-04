@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,7 +42,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
-        Utilisateur u = utilisateurs.findByEmail(req.email).orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+        Utilisateur u = utilisateurs.findByEmailWithRole(req.email).orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
         if (!userService.matchesPassword(req.password, u.getMotDePasse())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
@@ -56,7 +57,7 @@ public class AuthController {
         }
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", List.of(role));
+        claims.put("roles", Collections.singletonList(role));
         if (patientId != null) claims.put("patientId", patientId);
         if (friendOfPatientId != null) claims.put("friendOfPatientId", friendOfPatientId);
         String token = jwtService.create(u.getEmail(), claims);
@@ -70,7 +71,7 @@ public class AuthController {
         resp.role = role;
         resp.patientId = patientId;
         resp.friendOfPatientId = friendOfPatientId;
-        resp.roles = List.of(role);
+        resp.roles = Collections.singletonList(role);
         return ResponseEntity.ok(resp);
     }
 
@@ -80,8 +81,11 @@ public class AuthController {
         Map<String, Object> out = new HashMap<>();
         if (auth == null) return ResponseEntity.ok(out);
         out.put("sub", auth.getName());
-        if (auth.getDetails() instanceof Map<?,?> m) {
-            out.putAll((Map<String, Object>) m);
+        Object details = auth.getDetails();
+        if (details instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> m = (Map<String, Object>) details;
+            out.putAll(m);
         }
         return ResponseEntity.ok(out);
     }
