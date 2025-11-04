@@ -1,0 +1,59 @@
+services:
+  # --- MQTT BROKER ---
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt_broker
+    restart: always
+    ports:
+      - "1883:1883"      # MQTT
+      - "9001:9001"      # WebSocket
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- MQTT UI (Web-based MQTT Client) ---
+  mqtt-ui:
+    build:
+      context: ./mqtt-ui
+      dockerfile: Dockerfile
+    container_name: mqtt_web_ui
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - mosquitto
+
+  # --- DEVICE & PHONE SIMULATOR ---
+  simulator:
+    build:
+      context: ./simulator
+      dockerfile: ${SIMULATOR_DOCKERFILE:-Dockerfile}  # Use Dockerfile.corporate if behind corporate proxy
+    container_name: esante_simulator
+    restart: always
+    environment:
+      # MQTT Configuration
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: 1883
+      
+      # Simulation Configuration
+      NUM_PATIENTS: ${NUM_PATIENTS:-10}                    # Number of patients to simulate (default: 10)
+      EMIT_INTERVAL_SECONDS: ${EMIT_INTERVAL_SECONDS:-10}  # Emit vitals every N seconds (default: 10)
+      ALERT_INTERVAL_SECONDS: ${ALERT_INTERVAL_SECONDS:-60} # Generate alert every N seconds (default: 60)
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mosquitto_data:
+  mosquitto_logs:

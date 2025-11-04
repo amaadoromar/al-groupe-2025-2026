@@ -1,0 +1,180 @@
+Notre objectif métier
+Maintien à domicile en sécurité, avec suivi continu de quoi?
+Moins de visites systématiques de l’infirmier·ère ; interventions à la demande (sur alerte ou tendance).
+Alertes automatiques + rapports clairs pour patient, famille et soignants.
+Permettre le maintien à domicile en toute sécurité grâce à une surveillance continue avec alertes et rapports, afin de réduire les visites systématiques à l'hôpital et intervenir seulement quand c’est nécessaire.
+Pack unique (tout inclus)
+Élément
+Détails
+Appareils
+Montre (fréquence cardiaque, SpO₂, pas), Tensiomètre, Glucomètre, Balance
+Applications
+Appli mobile patient (Android/iOS), portail web pour soignants et famille
+Plateforme
+Alertes en temps réel, stockage longue durée, tableaux de bord, génération de rapports, gestion des RDV
+Services
+Onboarding, support matériel, (option) surveillance 24/7, export PDF/CSV
+
+Utilisation des appareils (cadence)
+Appareil
+Données
+Fréquence d’usage
+Remarques
+Montre
+FC, SpO₂, pas
+FC en continu ; SpO₂ ponctuel + la nuit ; pas par minute
+Peut fournir des indices d’effort et de sommeil
+Tensiomètre
+SBP/DBP + FC
+1 à 3× / jour, de préférence assis, 5 min au repos
+Série de 2–3 mesures, moyenne calculée
+Glucomètre
+Glycémie
+Avant et après repas, + si symptômes
+Tag “pré”/“post” repas dans l’appli
+Balance
+Poids
+1× / jour, le matin après toilette
+Garder la mesure la plus stable du jour
+
+Données produites 
+Type
+Exemple
+Unité
+À quoi ça sert
+FC (montre)
+78
+bpm
+Repos/effort, tachycardie
+SpO₂ (montre)
+96
+%
+Hypoxie, apnées suspectes
+Pas / activité
+5 000
+pas/jour
+Sédentarité, récupération
+Tension artérielle
+132/85
+mmHg
+Hypertension, urgence
+Glycémie
+145
+mg/dL
+Hypo/hyperglycémie
+Poids
+78.4
+kg
+Rétention hydrique, suivi nutrition
+
+Pipeline d’ingestion de données
+1) Capture sur l’appareil (montre / tensiomètre / glucomètre / balance)
+Transformations
+Horodatage local de la mesure.
+Emballage des métadonnées : batterie, firmware, qualité de mesure (ex. brassard bien serré).
+Contrôles
+Plages physiques plausibles (ex. SpO₂ 50–100 %, FC 30–220 bpm).
+Signaux de qualité (mouvement, mauvaise pose, bandelette invalide).
+Reprise automatique (ex. BP répète une mesure si artefact détecté).
+2) Téléphone du patient (appli “edge”)
+Transformations
+Normalisation des unités (kg, mmHg, mg/dL, bpm).
+Synchronisation du temps → conversion en UTC.
+Regroupement (petits lots de 5–10 s) pour économiser le réseau.
+Pseudonymisation : patient → identifiant technique.
+Compression + chiffrement avant envoi.
+Contrôles
+Validation de schéma (champs obligatoires présents).
+Déduplication (numéro de séquence / hash).
+Anti-bruit : rejet des valeurs hors plage configurée.
+Tampon hors-ligne chiffré (≥ 48 h) + reprise automatique.
+Avertissements locaux : batterie faible, Bluetooth perdu, mesure ratée.
+3) Transport & courtier de messages (ex. MQTT/HTTPS)
+Transformations
+Routage par patient/appareil (topics).
+Ajout d’un horodatage serveur à la réception.
+
+
+Contrôles
+Qualité de service (QoS 1/2), ré-essais avec backoff.
+Authentification (certificats / OAuth) & autorisations par rôles.
+Limitation de débit par appareil, journaux d’audit (connexion, erreurs).
+4) Traitement en flux (Stream Processing)
+Transformations (principales)
+Rééchantillonnage / agrégation :
+FC : 1 s → paquets 1 min (moyenne, médiane, min, max, écart-type) + fenêtre glissante 5 min (moyenne, z-score, lissage EWMA).
+SpO₂ : valeurs ponctuelles + % du temps < 90 % (fenêtres 5 min et 1 h).
+Tension : moyenne d’une série de 2–3 mesures, calcul MAP = DBP + (SBP−DBP)/3.
+Glycémie : tag pré/post repas ; Time-In-Range (70–180 mg/dL) par jour.
+Poids : lissage 3 jours, variation hebdomadaire (%), IMC (avec taille enregistrée).
+Enrichissement : fuseau horaire, préférences patient, seuils personnalisés.
+Routage d’événements : création d’événements ALERTE/URGENCE vers le service d’alerting et le Live Stream.
+Contrôles
+Marquage qualité : out_of_range, mouvement, appareil_offline, donnée_manquante.
+Gestion des retards (late events) avec watermark ; idempotence des écritures.
+Surveillance SLA : latence capteur→pipeline, pertes, erreurs.
+5) Stockage (time serieeeeesss)
+Transformations
+Écriture double :
+Brut (rétention courte, ex. 30 jours).
+Agrégés (1 min / 5 min / 1 h) pour analyses et rapports (rétention longue, ex. 5 ans).
+Indexation par patient, type, période ; partitionnement par temps.
+Contrôles
+Chiffrement au repos, sauvegardes régulières, vérifications d’intégrité.
+Politiques de rétention et anonymisation pour usages secondaires.
+6) Service de diffusion en direct (Live Streaming)
+Transformations
+Publication des dernières fenêtres (ex. FC 1 min, SpO₂ récente) et des événements d’alerte via WebSocket/SSE.
+Throttling côté serveur pour éviter la surcharge (ex. max 1 mise à jour/s par client).
+Contrôles
+Authentification/autorisation par rôle (patient, aidant, soignant).
+Reconnexion automatique, limite du nombre de clients.
+7) Alertes & escalade (sécurité du patient)
+Niveau
+Exemple de déclencheur (par défaut)
+Action
+Info
+Tendance FC au-dessus de l’habitude sur 1 h
+Notification douce + conseils
+Alerte
+SpO₂ < 90 % cumulé ≥ 2 min / 10 min ; SBP ≥ 160 répété ; glycémie > 250 ou < 70
+Notification push/SMS au patient + tableau de bord soignant
+Urgence
+SBP ≥ 180 ou DBP ≥ 120 ; SpO₂ < 85 % ; glycémie > 300 ou < 54 ; +2 kg en 3 jours (IC)
+Appel/alerte prioritaire, contact aidant/plateau, suggestion de RDV
+
+8) Rapports & consommation finale
+Hebdomadaire (patient/famille) : résumé simple (tendances, alertes, adhérence).
+Mensuel (clinicien) : statistiques détaillées, comparaisons, événements, RDV.
+Rapport post-événement : fenêtre ±72 h autour d’une alerte.
+Agrégations & rééchantillonnage (à différents niveaux)
+Niveau
+Ce qui arrive
+Rééchantillonnage (sampling)
+Agrégations calculées
+Pourquoi
+Appareil (montre, BP, glucomètre, balance)
+Mesures brutes (HR 1 s, SpO₂ spot, BP séries, glucose ponctuel, poids quotidien)
+HR natif (1 Hz) ; le reste “tel quel”
+Moyenne très courte côté montre si dispo (anti-bruit)
+Limiter le bruit avant envoi
+Téléphone (edge)
+Paquets de quelques secondes
+Regroupement par lot 5–10 s (pas de perte)
+Aucune (juste normalisation unités/horodatage)
+Économiser batterie/réseau
+Pipeline temps réel
+Flux normalisé
+HR: 1 s → 1 min ; fenêtre glissante 5 min (pas 1 min) • SpO₂: fenêtres 5 min & 1 h • BP: par série • Glucose: par repas/jour • Poids: journalier
+HR: mean/median/min/max/std, z-score, EWMA • SpO₂: % temps < 90 % • BP: moyenne de série, MAP • Glucose: Time-In-Range (70–180) • Poids: moyenne 3 j, Δ7 j %, IMC
+Produire des indicateurs stables pour alertes
+Stockage
+Bruts + agrégés
+Niveaux d’agrégats: 1 min / 5 min / 1 h / jour
+Rollups (sum/mean/min/max/count/std, percentiles p10/p90)
+Requêtes rapides et rapports
+Rapports (hebdo/mensuel)
+Séries consolidées
+Jour → Semaine → Mois
+Moyennes/medians hebdo, boxplots (BP/glucose), tendances, adhérence (%)
+Lecture simple & décisions cliniques
