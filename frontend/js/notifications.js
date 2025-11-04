@@ -1,0 +1,115 @@
+// Notification service integration (WebSocket + REST)
+// Requires SockJS and StompJS to be loaded globally via CDN script tags.
+
+import { toast, beep } from './common.js';
+
+const DEFAULT_BASE = 'http://localhost:8080';
+
+export function getNotifBaseUrl() {
+  return (
+    window.NOTIF_BASE_URL ||
+    localStorage.getItem('notifBaseUrl') ||
+    DEFAULT_BASE
+  );
+}
+
+let client = null;
+let connected = false;
+let retryTimer = null;
+
+export function connectNotifications(opts = {}) {
+  const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');
+  if (connected || client) return; // avoid double connections
+
+  if (!window.SockJS) {
+    console.warn('SockJS not found. Include sockjs-client CDN before notifications.js');
+    return;
+  }
+
+  const hasModern = !!(window.StompJs && window.StompJs.Client);
+  const hasLegacy = !!window.Stomp;
+  if (!hasModern && !hasLegacy) {
+    console.warn('STOMP lib not found. Include @stomp/stompjs UMD or stompjs before notifications.js');
+    return;
+  }
+
+  const sockFactory = () => new window.SockJS(baseUrl + '/ws');
+
+  if (hasModern) {
+    const { Stomp } = window.StompJs;
+    client = new window.StompJs.Client({
+      webSocketFactory: sockFactory,
+      reconnectDelay: 3000,
+      debug: () => {}
+    });
+    client.onConnect = () => {
+      connected = true;
+      client.subscribe('/topic/notifications', (msg) => {
+        try {
+          const n = JSON.parse(msg.body || '{}');
+          displayNotification(n);
+        } catch (e) { console.error('Invalid notification payload', e); }
+      });
+    };
+    client.onStompError = () => { connected = false; };
+    client.activate();
+  } else {
+    const sock = sockFactory();
+    client = window.Stomp.over(sock);
+    client.debug = null; // silence logs
+    const onConnect = () => {
+      connected = true;
+      client.subscribe('/topic/notifications', (msg) => {
+        try {
+          const n = JSON.parse(msg.body || '{}');
+          displayNotification(n);
+        } catch (e) { console.error('Invalid notification payload', e); }
+      });
+    };
+    const onError = (err) => {
+      connected = false;
+      client = null;
+      console.warn('Notification socket error, retrying in 3s', err);
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => connectNotifications({ baseUrl }), 3000);
+    };
+    client.connect({}, onConnect, onError);
+  }
+}
+
+export function displayNotification(n) {
+  if (!n) return;
+  const type = (n.type || 'INFO').toUpperCase();
+  const title = n.title || 'Notification';
+  const message = n.message || '';
+  const text = `${title}: ${message}`;
+  const critical = type === 'ERROR' || type === 'WARNING';
+  toast(text, critical);
+  if (critical) beep();
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try { new Notification(title, { body: message }); } catch {}
+  }
+}
+
+export async function sendRealtimeNotification(payload, opts = {}) {
+  const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');
+  const res = await fetch(baseUrl + '/api/notifications/realtime/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to send notification: ' + res.status);
+  return res.text();
+}
+
+export async function sendTestNotification(opts = {}) {
+  const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');
+  const res = await fetch(baseUrl + '/api/notifications/realtime/test');
+  if (!res.ok) throw new Error('Failed to trigger test notification: ' + res.status);
+  return res.text();
+}
+
+// Auto-connect on load
+window.addEventListener('DOMContentLoaded', () => {
+  try { connectNotifications(); } catch {}
+});

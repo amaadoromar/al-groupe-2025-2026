@@ -22,5 +22,10 @@ server:
 
 logging:
   level:
+<<<<<<< HEAD
+    org.eSante.notificationservice: DEBUG
+    org.springframework.web.socket: DEBUG
+=======
     fr.polytech.notification: DEBUG
     org.springframework.web.socket: DEBUG
+>>>>>>> 70997841c214f6b52de5bdfc5e544a8717b6584a

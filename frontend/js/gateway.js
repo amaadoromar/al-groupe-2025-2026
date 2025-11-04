@@ -1,4 +1,5 @@
-import { qs, storage, clamp, now, toast, notify } from './common.js';
+import { qs, storage, clamp, now, toast } from './common.js';
+import { sendRealtimeNotification } from './notifications.js';
 
 let sim = { timer: null, base: { hr: 76, spo2: 97, temp: 36.8 } };
 const state = { gwPatient: '' };
@@ -13,13 +14,14 @@ function evaluateAlerts(pid, s) {
   const alerts = [];
   // Basic thresholds also checked in dashboard visually; duplicates are fine here for alerting
   if (s.hr < 45 || s.hr > 110) alerts.push({ type: 'hr', value: s.hr, msg: `Rythme cardiaque ${s.hr} bpm` });
-  if (s.spo2 < 90) alerts.push({ type: 'spo2', value: s.spo2, msg: `SpO₂ ${s.spo2}%` });
+  if (s.spo2 < 90) alerts.push({ type: 'spo2', value: s.spo2, msg: `SpO2 ${s.spo2}%` });
   if (s.temp > 38.5) alerts.push({ type: 'temp', value: s.temp, msg: `Température ${s.temp}°C` });
   alerts.forEach(a => {
     const rec = { t: now(), ...a };
     storage.pushAlert(pid, rec);
-    toast(`Alerte ${a.type.toUpperCase()} – ${a.msg}`, true);
-    notify(`Alerte ${a.type.toUpperCase()}`, a.msg);
+    const payload = { type: 'WARNING', title: `Alerte ${a.type.toUpperCase()}`, message: a.msg };
+    // Envoyer la notification au backend; l'UI l'affichera via WebSocket
+    sendRealtimeNotification(payload).catch(() => {});
   });
 }
 

@@ -6,6 +6,8 @@
     <title>POC e‑santé – Administration</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
   </head>
   <body>
     <header class="topbar">
@@ -89,6 +91,10 @@
     <div id="toast" class="toast hidden"></div>
 
     <script type="module" src="./js/admin.js"></script>
+    <script type="module">
+      import { connectNotifications } from './js/notifications.js';
+      connectNotifications();
+    </script>
   </body>
   </html>
 

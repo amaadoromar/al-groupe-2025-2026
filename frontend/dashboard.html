@@ -6,6 +6,8 @@
     <title>POC e‑santé – Tableau de bord</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
   </head>
   <body>
     <header class="topbar">
@@ -65,6 +67,10 @@
     <div id="toast" class="toast hidden"></div>
     <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth();</script>
     <script type="module" src="./js/dashboard.js"></script>
+    <script type="module">
+      import { connectNotifications } from './js/notifications.js';
+      connectNotifications();
+    </script>
   </body>
   </html>
 
