@@ -1,0 +1,33 @@
+# Build stage - use Debian-based image for better certificate handling
+FROM golang:1.21-bullseye AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod ./
+
+# Copy source code (needed for go mod tidy)
+COPY main.go ./
+
+# Download dependencies and generate go.sum (GOSUMDB off to avoid certificate issues in some environments)
+ENV GOSUMDB=off
+RUN go mod download && go mod tidy
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o simulator .
+
+# Runtime stage - use minimal alpine with ca-certificates
+FROM alpine:latest
+
+# Install ca-certificates for HTTPS
+RUN apk --no-cache add ca-certificates 2>/dev/null || true
+
+WORKDIR /root/
+
+# Copy the binary from builder
+COPY --from=builder /app/simulator ./
+
+# Set timezone to UTC
+ENV TZ=UTC
+
+CMD ["./simulator"]
