@@ -15,6 +15,11 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
       - ./init/pg_init.sql:/docker-entrypoint-initdb.d/pg_init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d eSantePg" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   influxdb:
     image: influxdb:2.7
@@ -31,10 +36,18 @@ services:
       DOCKER_INFLUXDB_INIT_PASSWORD: admin123
       DOCKER_INFLUXDB_INIT_ORG: eSanteIdb
       DOCKER_INFLUXDB_INIT_BUCKET: mesure_data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-super-secret-auth-token
+    healthcheck:
+        test: [ "CMD", "influx", "ping" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
   # --- MICRO-SERVICES ---
   monitoring-service:
-    build: ./backend/monitoring-service
+    build:
+      context: ./backend
+      dockerfile: monitoring-service/Dockerfile
     container_name: monitoring_service
     restart: always
     ports:
@@ -52,25 +65,30 @@ services:
       - influxdb
 
   reporting-service:
-    build: ./backend/reporting-service
-    container_name: reporting_service
-    restart: always
-    ports:
-      - "8082:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eSantePg
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
-    depends_on:
-      - postgres
-
-  notification-service:
-    build: ./backend/notification-service
-    container_name: notification_service
-    restart: always
-    ports:
-      - "8083:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:h2:mem:notifications;DB_CLOSE_DELAY=-1
-    depends_on:
-      - postgres
+      build:
+        context: ./backend
+        dockerfile: reporting-service/Dockerfile
+      container_name: reporting_service
+      restart: always
+      ports:
+        - "8082:8082"
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eSantePg
+        SPRING_DATASOURCE_USERNAME: admin
+        SPRING_DATASOURCE_PASSWORD: admin
+        INFLUXDB_URL: http://influxdb:8086
+        INFLUXDB_TOKEN: my-super-secret-auth-token
+        INFLUXDB_ORG: eSanteIdb
+        INFLUXDB_BUCKET: mesure_data
+        REPORTING_STORAGE_PATH: /reports
+      volumes:
+        - reports_data:/reports
+      depends_on:
+        postgres:
+          condition: service_healthy
+        influxdb:
+          condition: service_healthy
+volumes:
+    postgres_data:
+    influxdb_data:
+    reports_data:
