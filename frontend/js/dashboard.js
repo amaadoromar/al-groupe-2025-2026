@@ -1,4 +1,5 @@
-import { qs, storage, drawChart, fmtTime, T, toast } from './common.js';
+﻿import { qs, storage, drawChart, fmtTime, T, toast } from './common.js';
+import { apiFetch } from './auth.js';
 
 const state = { dbPatient: '' };
 
@@ -13,7 +14,7 @@ function renderAlerts() {
     b.className = 'badge ' + (a.type === 'hr' ? (a.value > T.hr.warnHi || a.value < T.hr.warnLo ? 'danger' : 'ok') : a.type === 'spo2' ? (a.value < T.spo2.warnLo ? 'danger' : 'ok') : (a.value > T.temp.warnHi ? 'warn' : 'ok'));
     b.textContent = a.type.toUpperCase();
     const txt = document.createElement('div');
-    txt.textContent = `${a.msg} – ${fmtTime(a.t)}`;
+    txt.textContent = `${a.msg} — ${fmtTime(a.t)}`;
     li.appendChild(b); li.appendChild(txt);
     ul.appendChild(li);
   });
@@ -33,9 +34,9 @@ function renderDashboard() {
   drawChart(cS, spo2, T.spo2.color, [T.spo2.min, T.spo2.max]);
   drawChart(cT, temp, T.temp.color, [T.temp.min, T.temp.max]);
   const last = samples[samples.length - 1];
-  qs('#last-hr').textContent = last ? `Dernier: ${last.hr} bpm · ${fmtTime(last.t)}` : '';
-  qs('#last-spo2').textContent = last ? `Dernier: ${last.spo2}% · ${fmtTime(last.t)}` : '';
-  qs('#last-temp').textContent = last ? `Dernier: ${last.temp}°C · ${fmtTime(last.t)}` : '';
+  qs('#last-hr').textContent = last ? `Dernier: ${last.hr} bpm – ${fmtTime(last.t)}` : '';
+  qs('#last-spo2').textContent = last ? `Dernier: ${last.spo2}% – ${fmtTime(last.t)}` : '';
+  qs('#last-temp').textContent = last ? `Dernier: ${last.temp}°C – ${fmtTime(last.t)}` : '';
   renderAlerts();
 }
 
@@ -50,22 +51,28 @@ function bindUI() {
   qs('#ack-all').addEventListener('click', () => { if (state.dbPatient) { storage.clearAlerts(state.dbPatient); renderAlerts(); } });
 }
 
-function init() {
-  const patients = storage.getPatients();
+async function init() {
   const sel = qs('#db-patient');
   sel.innerHTML = '';
-  patients.forEach(p => {
-    const o = document.createElement('option');
-    o.value = p.id; o.textContent = `${p.prenom} ${p.nom} – ${p.dossier || 'sans dossier'}`;
-    sel.appendChild(o);
-  });
-  if (patients[0]) {
-    state.dbPatient = patients[0].id;
-    sel.value = state.dbPatient;
+  try {
+    const res = await apiFetch('/api/users?role=PATIENT');
+    if (!res.ok) throw new Error('Chargement des patients échoué');
+    const patients = await res.json();
+    patients.forEach(u => {
+      const o = document.createElement('option');
+      o.value = String(u.id);
+      o.textContent = `${u.prenom} ${u.nom} (${u.email})`;
+      sel.appendChild(o);
+    });
+    if (patients[0]) {
+      state.dbPatient = String(patients[0].id);
+      sel.value = state.dbPatient;
+    }
+  } catch (e) {
+    toast('Impossible de charger la liste des patients', true);
   }
   bindUI();
   renderDashboard();
 }
 
-window.addEventListener('DOMContentLoaded', init);
-
+window.addEventListener('DOMContentLoaded', () => { init(); });
