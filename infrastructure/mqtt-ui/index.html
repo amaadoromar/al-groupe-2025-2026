@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSanté MQTT Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        
+        .status-badge.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.green {
+            background: #28a745;
+        }
+        
+        .status-indicator.red {
+            background: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .messages {
+            padding: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: slideIn 0.3s;
+        }
+        
+        .message.alert {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .topic {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+        
+        .timestamp {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+        
+        .payload {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .vital-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .vital-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .vital-label {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .vital-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #212529;
+        }
+        
+        .no-messages {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
+        }
+        
+        .no-messages-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>eSante MQTT Monitor</h1>
+            <p>Real-time Patient Vitals Monitoring</p>
+        </div>
+        
+        <div class="status">
+            <div>
+                <span class="status-badge disconnected" id="statusBadge">
+                    <span class="status-indicator red" id="statusIndicator"></span>
+                    <span id="statusText">Disconnected</span>
+                </span>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="messageCount">0</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="patientCount">0</div>
+                    <div class="stat-label">Patients</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="connectBtn" onclick="connect()">Connect</button>
+            <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button class="btn btn-secondary" onclick="clearMessages()">Clear Messages</button>
+            <label style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="autoScroll" checked>
+                <span>Auto-scroll</span>
+            </label>
+        </div>
+        
+        <div class="messages" id="messagesContainer">
+            <div class="no-messages">
+                <div class="no-messages-icon">[MQTT]</div>
+                <h3>Waiting for MQTT messages...</h3>
+                <p>Click "Connect" to start receiving vitals data</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+    <script>
+        let client = null;
+        let messageCount = 0;
+        let patients = new Set();
+        
+        function connect() {
+            const brokerUrl = `ws://${window.location.hostname}:9001`;
+            console.log('Connecting to:', brokerUrl);
+            
+            client = mqtt.connect(brokerUrl, {
+                clientId: 'mqtt-web-ui-' + Math.random().toString(16).substr(2, 8)
+            });
+            
+            client.on('connect', function() {
+                console.log('Connected to MQTT broker');
+                updateStatus(true);
+                client.subscribe('esante/#', function(err) {
+                    if (!err) {
+                        console.log('Subscribed to esante/#');
+                    }
+                });
+            });
+            
+            client.on('message', function(topic, message) {
+                handleMessage(topic, message.toString());
+            });
+            
+            client.on('error', function(error) {
+                console.error('MQTT Error:', error);
+                updateStatus(false);
+            });
+            
+            client.on('close', function() {
+                console.log('Connection closed');
+                updateStatus(false);
+            });
+        }
+        
+        function disconnect() {
+            if (client) {
+                client.end();
+                client = null;
+                updateStatus(false);
+            }
+        }
+        
+        function updateStatus(connected) {
+            const badge = document.getElementById('statusBadge');
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                badge.className = 'status-badge connected';
+                indicator.className = 'status-indicator green';
+                text.textContent = 'Connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                badge.className = 'status-badge disconnected';
+                indicator.className = 'status-indicator red';
+                text.textContent = 'Disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+        
+        function handleMessage(topic, messageStr) {
+            messageCount++;
+            document.getElementById('messageCount').textContent = messageCount;
+            
+            try {
+                const payload = JSON.parse(messageStr);
+                const patientId = payload.patientId || 'unknown';
+                patients.add(patientId);
+                document.getElementById('patientCount').textContent = patients.size;
+                
+                const isAlert = isAlertValue(payload);
+                addMessage(topic, payload, isAlert);
+            } catch (e) {
+                console.error('Error parsing message:', e);
+                addMessage(topic, messageStr, false);
+            }
+        }
+        
+        function isAlertValue(payload) {
+            const type = payload.measurementType;
+            const value = payload.value;
+            const value2 = payload.value2;
+            
+            if (type === 'HEART_RATE') return value < 45 || value > 110;
+            if (type === 'SPO2') return value < 90;
+            if (type === 'BLOOD_PRESSURE') return value >= 160 || value2 >= 100;
+            if (type === 'GLUCOSE') return value < 70 || value > 250;
+            
+            return false;
+        }
+        
+        function addMessage(topic, payload, isAlert) {
+            const container = document.getElementById('messagesContainer');
+            
+            // Remove "no messages" placeholder
+            if (container.querySelector('.no-messages')) {
+                container.innerHTML = '';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message' + (isAlert ? ' alert' : '');
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let content = `
+                <div class="message-header">
+                    <span class="topic">${isAlert ? '[ALERT] ' : ''}${topic}</span>
+                    <span class="timestamp">${timestamp}</span>
+                </div>
+            `;
+            
+            if (typeof payload === 'object') {
+                content += `<div class="vital-display">`;
+                content += `<div class="vital-item">
+                    <div class="vital-label">Patient</div>
+                    <div class="vital-value">${payload.patientId}</div>
+                </div>`;
+                content += `<div class="vital-item">
+                    <div class="vital-label">Type</div>
+                    <div class="vital-value">${payload.measurementType}</div>
+                </div>`;
+                content += `<div class="vital-item">
+                    <div class="vital-label">Value</div>
+                    <div class="vital-value">${payload.value.toFixed(2)} ${payload.unit}</div>
+                </div>`;
+                if (payload.value2) {
+                    content += `<div class="vital-item">
+                        <div class="vital-label">Diastolic</div>
+                        <div class="vital-value">${payload.value2.toFixed(2)} ${payload.unit}</div>
+                    </div>`;
+                }
+                content += `<div class="vital-item">
+                    <div class="vital-label">Device</div>
+                    <div class="vital-value">${payload.deviceType}</div>
+                </div>`;
+                content += `<div class="vital-item">
+                    <div class="vital-label">Battery</div>
+                    <div class="vital-value">${payload.metadata.battery}%</div>
+                </div>`;
+                content += `</div>`;
+                content += `<div class="payload">${JSON.stringify(payload, null, 2)}</div>`;
+            } else {
+                content += `<div class="payload">${payload}</div>`;
+            }
+            
+            messageDiv.innerHTML = content;
+            container.insertBefore(messageDiv, container.firstChild);
+            
+            // Auto-scroll
+            if (document.getElementById('autoScroll').checked) {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // Keep only last 100 messages
+            while (container.children.length > 100) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        function clearMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = `
+                <div class="no-messages">
+                    <div class="no-messages-icon">[MQTT]</div>
+                    <h3>Messages cleared</h3>
+                    <p>Waiting for new vitals data...</p>
+                </div>
+            `;
+            messageCount = 0;
+            patients.clear();
+            document.getElementById('messageCount').textContent = '0';
+            document.getElementById('patientCount').textContent = '0';
+        }
+    </script>
+</body>
+</html>
