@@ -1,103 +1,113 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env sh
+set -eu
 
-echo "⏳ Attente du démarrage d'InfluxDB..."
+HOST_URL=${INFLUX_HOST_URL:-http://localhost:8086}
+echo "Waiting for InfluxDB to be ready at ${HOST_URL}..."
 
-# Attend que l'API InfluxDB réponde
-until influx ping &> /dev/null; do
-  echo "⏳ InfluxDB n'est pas encore prêt..."
+# Run once: guard file for idempotency
+SEED_FLAG="/docker-entrypoint-initdb.d/.influx_seed_done"
+if [ -f "$SEED_FLAG" ]; then
+  echo "Seed already applied. Skipping."
+  exit 0
+fi
+
+# Wait until the InfluxDB API answers
+until influx ping --host-url "$HOST_URL" >/dev/null 2>&1; do
+  echo "InfluxDB not ready yet..."
   sleep 5
 done
 
-echo "📊 Insertion de BEAUCOUP de données de test dans InfluxDB..."
+echo "Seeding test data into InfluxDB..."
 
-# Variables globales
-TOKEN="my-super-secret-auth-token"
-ORG="eSanteIdb"
-BUCKET="mesure_data"
+# Settings align with docker-compose DOCKER_INFLUXDB_INIT_* envs
+# TOKEN is required (provided by the official image during setup)
+TOKEN="${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN:?DOCKER_INFLUXDB_INIT_ADMIN_TOKEN is required}"
+ORG="${DOCKER_INFLUXDB_INIT_ORG:-eSanteIdb}"
+BUCKET="${DOCKER_INFLUXDB_INIT_BUCKET:-mesure_data}"
 
-# Fonction pour générer des timestamps récents
-NOW=$(date +%s)
+# Ensure bucket exists (idempotent)
+if ! influx bucket list --host-url "$HOST_URL" --org "$ORG" --token "$TOKEN" | grep -q "\b$BUCKET\b"; then
+  echo "Bucket '$BUCKET' missing. Creating..."
+  influx bucket create --host-url "$HOST_URL" --org "$ORG" --token "$TOKEN" --name "$BUCKET" >/dev/null
+fi
+
+now_ts() { date +%s; }
+NOW=$(now_ts)
 HOUR=3600
 DAY=$((24 * HOUR))
 
-# ========================================
-# PATIENT 1 - Alice (Hypertension)
-# ========================================
-echo "📝 Génération données Patient 1 (Alice)..."
+rand_u16() {
+  # Portable random 0..65535
+  od -An -N2 -tu2 /dev/urandom 2>/dev/null | tr -d ' '
+}
 
-# Fréquence cardiaque (7 derniers jours, toutes les heures)
+val_range() {
+  base=$1; span=$2
+  r=$(rand_u16)
+  echo $(( base + r % span ))
+}
+
+write_point() {
+  line="$1"
+  ts="$2"
+  influx write --host-url "$HOST_URL" --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" "$line $ts" >/dev/null
+}
+
+echo "Patient 1 (Alice)"
 for i in $(seq 0 168); do
-  timestamp=$((NOW - i * HOUR))
-  hr=$((65 + RANDOM % 25))  # 65-90 bpm
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "fc,patient=1,capteur=montre value=$hr $timestamp"
+  ts=$((NOW - i * HOUR))
+  hr=$(val_range 65 25)
+  write_point "fc,patient=1,capteur=montre value=$hr" "$ts"
 done
 
-# SpO2 (7 derniers jours, toutes les 2 heures)
 for i in $(seq 0 84); do
-  timestamp=$((NOW - i * HOUR * 2))
-  spo2=$((94 + RANDOM % 5))  # 94-99%
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "spO2,patient=1,capteur=montre value=$spo2 $timestamp"
+  ts=$((NOW - i * HOUR * 2))
+  spo2=$(val_range 94 5)
+  write_point "spO2,patient=1,capteur=montre value=$spo2" "$ts"
 done
 
-# Tension artérielle (7 derniers jours, 2x/jour)
 for i in $(seq 0 14); do
-  timestamp=$((NOW - i * DAY / 2))
-  systolic=$((125 + RANDOM % 30))
-  diastolic=$((80 + RANDOM % 15))
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "tension,patient=1,capteur=tensiometre systolique=$systolic,diastolique=$diastolic $timestamp"
+  ts=$((NOW - i * DAY / 2))
+  systolic=$(val_range 125 30)
+  diastolic=$(val_range 80 15)
+  write_point "tension,patient=1,capteur=tensiometre systolique=$systolic,diastolique=$diastolic" "$ts"
 done
 
-# Poids (7 derniers jours)
 for i in $(seq 0 7); do
-  timestamp=$((NOW - i * DAY))
-  weight_tenths=$((685 + RANDOM % 10))
-  weight="$(printf '%d.%d' $((weight_tenths / 10)) $((weight_tenths % 10)))"
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "poids,patient=1,capteur=balance value=$weight $timestamp"
+  ts=$((NOW - i * DAY))
+  w10=$(val_range 685 10)
+  weight=$(printf '%d.%d' $((w10 / 10)) $((w10 % 10)))
+  write_point "poids,patient=1,capteur=balance value=$weight" "$ts"
 done
 
-# ========================================
-# PATIENT 2 - Bob (Diabète)
-# ========================================
-echo "📝 Génération données Patient 2 (Bob)..."
-
+echo "Patient 2 (Bob)"
 for i in $(seq 0 168); do
-  timestamp=$((NOW - i * HOUR))
-  hr=$((70 + RANDOM % 20))
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "fc,patient=2,capteur=montre value=$hr $timestamp"
+  ts=$((NOW - i * HOUR))
+  hr=$(val_range 70 20)
+  write_point "fc,patient=2,capteur=montre value=$hr" "$ts"
 done
 
 for i in $(seq 0 28); do
-  timestamp=$((NOW - i * DAY / 4))
-  glucose=$((100 + RANDOM % 120))
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "glycemie,patient=2,capteur=glucometre value=$glucose $timestamp"
+  ts=$((NOW - i * DAY / 4))
+  glucose=$(val_range 100 120)
+  write_point "glycemie,patient=2,capteur=glucometre value=$glucose" "$ts"
 done
 
 for i in $(seq 0 7); do
-  timestamp=$((NOW - i * DAY))
-  weight_tenths=$((823 + RANDOM % 10))
-  weight="$(printf '%d.%d' $((weight_tenths / 10)) $((weight_tenths % 10)))"
-  influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-    "poids,patient=2,capteur=balance value=$weight $timestamp"
+  ts=$((NOW - i * DAY))
+  w10=$(val_range 823 10)
+  weight=$(printf '%d.%d' $((w10 / 10)) $((w10 % 10)))
+  write_point "poids,patient=2,capteur=balance value=$weight" "$ts"
 done
 
-# ========================================
-# PATIENTS 3–5
-# ========================================
 for patient_id in 3 4 5; do
-  echo "📝 Génération données Patient $patient_id..."
+  echo "Patient $patient_id"
   for i in $(seq 0 100); do
-    timestamp=$((NOW - i * HOUR))
-    hr=$((60 + RANDOM % 30))
-    influx write --org "$ORG" --bucket "$BUCKET" --precision s --token "$TOKEN" \
-      "fc,patient=$patient_id,capteur=montre value=$hr $timestamp"
+    ts=$((NOW - i * HOUR))
+    hr=$(val_range 60 30)
+    write_point "fc,patient=$patient_id,capteur=montre value=$hr" "$ts"
   done
 done
 
-echo "✅ Données InfluxDB initialisées avec succès !"
+touch "$SEED_FLAG"
+echo "InfluxDB seed completed."

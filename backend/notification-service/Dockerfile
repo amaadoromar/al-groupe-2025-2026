@@ -6,11 +6,15 @@ COPY ../pom.xml ./pom.xml
 COPY ../notification-service ./notification-service
 
 WORKDIR /app/notification-service
-RUN mvn -q -e -DskipTests clean package
+RUN mvn -Dmaven.test.skip=true clean package \
+    && echo "Selecting repackaged Spring Boot jar" \
+    && J=$(ls target/*.jar | grep -v '\\.original$' | head -n 1) \
+    && cp "$J" target/app.jar \
+    && echo "Copied $J to target/app.jar"
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/notification-service/target/*.jar app.jar
+COPY --from=build /app/notification-service/target/app.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
