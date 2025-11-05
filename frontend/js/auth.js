@@ -61,8 +61,8 @@ export async function apiFetch(path, opts = {}) {
 export function redirectByRole(role) {
   switch (role) {
     case 'ADMIN': return 'admin.html';
-    case 'DOCTEUR':
-    case 'INFIRMIER': return 'doctor.html';
+    case 'DOCTEUR': return 'doctor.html';
+    case 'INFIRMIER': return 'nurse.html';
     case 'PATIENT': return 'patient.html';
     case 'PROCHE': return 'dashboard.html';
     default: return 'dashboard.html';
@@ -73,7 +73,7 @@ function linkAllowed(role, href) {
   if (href === 'admin.html') return role === 'ADMIN';
   if (href === 'doctor.html') return role === 'DOCTEUR';
   if (href === 'gateway.html' || href === 'patients.html') {
-    return role === 'DOCTEUR' || role === 'INFIRMIER';
+    return role === 'DOCTEUR' || role === 'INFIRMIER' || role === 'ADMIN';
   }
   if (href === 'nurses.html') return role === 'DOCTEUR' || role === 'ADMIN';
   if (href === 'nurse.html') return role === 'INFIRMIER' || role === 'ADMIN';
@@ -97,6 +97,16 @@ export function applyRoleNav() {
     const href = a.getAttribute('href');
     if (!linkAllowed(role, href)) a.style.display = 'none';
   });
+  // Inject a logout link if not present
+  if (!nav.querySelector('#logout-link')) {
+    const a = document.createElement('a');
+    a.id = 'logout-link';
+    a.href = '#';
+    a.textContent = 'Se déconnecter';
+    a.style.marginLeft = 'auto';
+    a.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    nav.appendChild(a);
+  }
   setActiveNav();
 }
 

@@ -1,6 +1,8 @@
 import { apiFetch } from './auth.js';
 const $ = (s) => document.querySelector(s);
 
+const patientEmailById = new Map();
+
 async function loadPatients() {
   const res = await apiFetch('/api/patients');
   if (!res.ok) throw new Error('Chargement des patients échoué');
@@ -10,6 +12,7 @@ async function loadPatients() {
     const o = document.createElement('option');
     o.value = p.id; o.textContent = `${p.prenom} ${p.nom} (${p.email})`;
     sel.appendChild(o);
+    patientEmailById.set(p.id, p.email);
   });
   if (list.length) { sel.value = String(list[0].id); }
 }
@@ -62,15 +65,73 @@ async function saveForm() {
   await apiFetch(`/api/patients/form?patientId=${pid}`, { method: 'PUT', body: JSON.stringify({ form }) });
 }
 
+function getNotifBase(){ return (localStorage.getItem('notifEmailBaseUrl') || 'http://localhost:8083').replace(/\/$/,''); }
+async function loadAlertHistory(){
+  const pid = getSelectedPatientId(); if (!pid) return;
+  const email = patientEmailById.get(pid) || '';
+  const ul = $('#nr-alert-history'); if (ul) ul.innerHTML='';
+  try{
+    const author = encodeURIComponent(email || '');
+    const res = await fetch(getNotifBase()+`/api/notifications/email/history?authorEmail=${author}&limit=20`);
+    if (!res.ok) throw new Error('history');
+    const list = await res.json();
+    if (!list.length){ if (ul) ul.innerHTML = '<li>Aucune alerte</li>'; return; }
+    list.forEach(it=>{
+      const li=document.createElement('li');
+      const t=document.createElement('div'); t.textContent=new Date(it.timestamp).toLocaleString();
+      const s=document.createElement('span'); s.className='badge ok'; s.textContent='ENVOYEE';
+      const msg=document.createElement('div'); msg.textContent=it.subject || 'Alerte patient';
+      li.appendChild(s); li.appendChild(msg); li.appendChild(t);
+      if (ul) ul.appendChild(li);
+    });
+  } catch {
+    if (ul) ul.innerHTML = '<li>Impossible de charger les alertes</li>';
+  }
+}
+
 async function init() {
   await loadPatients();
+  // Bind create-patient form
+  const form = document.getElementById('nr-create-patient-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        prenom: document.getElementById('nr-cp-prenom')?.value.trim(),
+        nom: document.getElementById('nr-cp-nom')?.value.trim(),
+        email: document.getElementById('nr-cp-email')?.value.trim(),
+        password: document.getElementById('nr-cp-pass')?.value,
+        dateNaissance: document.getElementById('nr-cp-naissance')?.value || null,
+        sexe: document.getElementById('nr-cp-sexe')?.value || null,
+        tailleCm: document.getElementById('nr-cp-taille')?.value ? parseInt(document.getElementById('nr-cp-taille').value, 10) : null,
+        poidsKg: document.getElementById('nr-cp-poids')?.value ? parseFloat(document.getElementById('nr-cp-poids').value) : null
+      };
+      try {
+        const res = await apiFetch('/api/patients/bootstrap', { method: 'POST', body: JSON.stringify(body) });
+        if (res.status !== 201) throw new Error('Création patient échouée');
+        const data = await res.json();
+        await loadPatients();
+        const sel = document.getElementById('nr-patient');
+        if (sel && data.patientId) { sel.value = String(data.patientId); }
+        await loadForm();
+        await loadObservations();
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        alert('Impossible de créer le patient');
+      }
+    });
+  }
   $('#btn-load-form').addEventListener('click', loadForm);
   $('#btn-load-obs').addEventListener('click', loadObservations);
   $('#btn-add-obs').addEventListener('click', addObservation);
   $('#btn-save-form').addEventListener('click', saveForm);
+  $('#nr-load-alerts')?.addEventListener('click', loadAlertHistory);
   $('#obs-content').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); addObservation(); } });
-  $('#nr-patient').addEventListener('change', () => { loadForm(); loadObservations(); });
+  $('#nr-patient').addEventListener('change', () => { loadForm(); loadObservations(); loadAlertHistory(); });
+  window.addEventListener('realtime:notification', () => { loadAlertHistory(); });
   try { await loadForm(); await loadObservations(); } catch {}
+  try { await loadAlertHistory(); } catch {}
 }
 
 window.addEventListener('DOMContentLoaded', init);
@@ -103,4 +164,3 @@ function fromModel(m){
   if ($('#nf-allergies')) $('#nf-allergies').value = m.allergies || '';
   if ($('#nf-antecedents')) $('#nf-antecedents').value = m.antecedents || '';
 }
-

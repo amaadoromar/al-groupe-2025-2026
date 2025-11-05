@@ -23,10 +23,12 @@ import org.eSante.identity.domain.Utilisateur;
 public class PatientsController {
     private final PatientRepository patients;
     private final UtilisateurRepository utilisateurs;
+    private final org.eSante.identity.service.UserService userService;
 
-    public PatientsController(PatientRepository patients, UtilisateurRepository utilisateurs) {
+    public PatientsController(PatientRepository patients, UtilisateurRepository utilisateurs, org.eSante.identity.service.UserService userService) {
         this.patients = patients;
         this.utilisateurs = utilisateurs;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -71,6 +73,44 @@ public class PatientsController {
         Map<String,Object> out = new HashMap<>();
         out.put("form", p.getFormJson() != null ? p.getFormJson() : "{}");
         return ResponseEntity.ok(out);
+    }
+
+    public static class NewPatientBootstrap {
+        public String nom;
+        public String prenom;
+        public String email;
+        public String password;
+        public String dateNaissance;
+        public String sexe;
+        public Integer tailleCm;
+        public Double poidsKg;
+        public String pathologiePrincipale;
+    }
+
+    @PostMapping("/bootstrap")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTEUR','INFIRMIER')")
+    public ResponseEntity<Map<String,Integer>> createUserAndPatient(@RequestBody NewPatientBootstrap req) {
+        if (req == null) throw new IllegalArgumentException("Body required");
+        if (req.nom == null || req.prenom == null || req.email == null || req.password == null) {
+            throw new IllegalArgumentException("Champs utilisateur requis: nom, prenom, email, password");
+        }
+        Utilisateur user = userService.createUser(req.nom, req.prenom, req.email, req.password, "PATIENT");
+        Patient p = new Patient();
+        p.setUtilisateur(user);
+        if (req.dateNaissance != null && !req.dateNaissance.trim().isEmpty()) {
+            p.setDateNaissance(LocalDate.parse(req.dateNaissance));
+        }
+        p.setSexe(req.sexe);
+        p.setTailleCm(req.tailleCm);
+        if (req.poidsKg != null) {
+            p.setPoidsKg(BigDecimal.valueOf(req.poidsKg));
+        }
+        p.setPathologiePrincipale(req.pathologiePrincipale);
+        p = patients.save(p);
+        Map<String,Integer> out = new HashMap<>();
+        out.put("userId", user.getId());
+        out.put("patientId", p.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(out);
     }
 
     // Alternate variant using request parameter for easier client integration
