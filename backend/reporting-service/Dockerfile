@@ -3,7 +3,7 @@ WORKDIR /app
 
 # Copy the whole backend for parent POM resolution
 COPY ../pom.xml ./pom.xml
-COPY ../monitoring-service ./monitoring-service
+#COPY ../monitoring-service ./monitoring-service
 COPY ../reporting-service ./reporting-service
 
 WORKDIR /app/reporting-service

@@ -89,6 +89,23 @@ services:
         influxdb:
           condition: service_healthy
 
+  notification-service:
+    build:
+      context: ./backend
+      dockerfile: notification-service/Dockerfile
+    container_name: notification_service
+    restart: always
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${NOTIF_MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${NOTIF_MAIL_PASSWORD:-}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+
   identity-service:
     build:
       context: ./backend
