@@ -1,7 +1,13 @@
-﻿import { qs, storage, drawChart, fmtTime, T, toast } from './common.js';
+﻿import { qs, storage, drawChart, drawChartMulti, fmtTime, T, toast } from './common.js';
 import { apiFetch } from './auth.js';
 
 const state = { dbPatient: '' };
+
+async function fetchSummary(pid, minutes = 60) {
+  const res = await fetch(`/api/dashboard/patient/${encodeURIComponent(pid)}/summary?minutes=${minutes}`);
+  if (!res.ok) throw new Error('fetch summary failed');
+  return res.json();
+}
 
 function renderAlerts() {
   const pid = state.dbPatient;
@@ -14,41 +20,67 @@ function renderAlerts() {
     b.className = 'badge ' + (a.type === 'hr' ? (a.value > T.hr.warnHi || a.value < T.hr.warnLo ? 'danger' : 'ok') : a.type === 'spo2' ? (a.value < T.spo2.warnLo ? 'danger' : 'ok') : (a.value > T.temp.warnHi ? 'warn' : 'ok'));
     b.textContent = a.type.toUpperCase();
     const txt = document.createElement('div');
-    txt.textContent = `${a.msg} — ${fmtTime(a.t)}`;
+    txt.textContent = `${a.msg}  ${fmtTime(a.t)}`;
     li.appendChild(b); li.appendChild(txt);
     ul.appendChild(li);
   });
 }
 
-function renderDashboard() {
+async function renderDashboard() {
   const pid = state.dbPatient;
   if (!pid) return;
-  const samples = storage.getSamples(pid);
-  const hr = samples.map(s => s.hr);
-  const spo2 = samples.map(s => s.spo2);
-  const temp = samples.map(s => s.temp);
-  const cHR = qs('#chart-hr');
-  const cS = qs('#chart-spo2');
-  const cT = qs('#chart-temp');
-  drawChart(cHR, hr, T.hr.color, [T.hr.min, T.hr.max]);
-  drawChart(cS, spo2, T.spo2.color, [T.spo2.min, T.spo2.max]);
-  drawChart(cT, temp, T.temp.color, [T.temp.min, T.temp.max]);
-  const last = samples[samples.length - 1];
-  qs('#last-hr').textContent = last ? `Dernier: ${last.hr} bpm – ${fmtTime(last.t)}` : '';
-  qs('#last-spo2').textContent = last ? `Dernier: ${last.spo2}% – ${fmtTime(last.t)}` : '';
-  qs('#last-temp').textContent = last ? `Dernier: ${last.temp}°C – ${fmtTime(last.t)}` : '';
-  // Extended vitals (if available)
-  const lastBp = last && (last.bpSys != null || last.bpDia != null)
-    ? `${last.bpSys != null ? last.bpSys : '—'} / ${last.bpDia != null ? last.bpDia : '—'} mmHg`
-    : '—';
-  const lastGlucose = last && last.glucose != null ? `${last.glucose} mg/dL` : '—';
-  const lastWeight = last && last.weight != null ? `${last.weight} kg` : '—';
-  const lastSteps = last && last.steps != null ? `${last.steps}` : '—';
-  const elBp = qs('#last-bp'); if (elBp) elBp.textContent = lastBp;
-  const elG = qs('#last-glucose'); if (elG) elG.textContent = lastGlucose;
-  const elW = qs('#last-weight'); if (elW) elW.textContent = lastWeight;
-  const elS = qs('#last-steps'); if (elS) elS.textContent = lastSteps;
-  renderAlerts();
+  try {
+    const summary = await fetchSummary(pid, 60);
+    const hrSeries = (summary.seriesHeartRate || []).map(p => p.value);
+    const spo2Series = (summary.seriesSpO2 || []).map(p => p.value);
+    drawChart(qs('#chart-hr'), hrSeries, T.hr.color, [T.hr.min, T.hr.max]);
+    drawChart(qs('#chart-spo2'), spo2Series, T.spo2.color, [T.spo2.min, T.spo2.max]);
+    const bpSys = (summary.seriesBloodPressureSys || []).map(p => p.value);
+    const bpDia = (summary.seriesBloodPressureDia || []).map(p => p.value);
+    const gluc = (summary.seriesGlucose || []).map(p => p.value);
+    const weight = (summary.seriesWeight || []).map(p => p.value);
+    drawChartMulti(qs('#chart-bp'), [bpSys, bpDia], ['#ef4444','#f59e0b'], [40, 180]);
+    drawChart(qs('#chart-glucose'), gluc, '#22d3ee', [50, 250]);
+    drawChart(qs('#chart-weight'), weight, '#a78bfa', [40, 140]);
+    // No temperature chart (not simulated)
+    const lastHr = summary.heartRate; qs('#last-hr').textContent = lastHr ? `Dernier: ${lastHr.value} bpm - ${fmtTime(lastHr.time)}` : '';
+    const lastSp = summary.spo2; qs('#last-spo2').textContent = lastSp ? `Dernier: ${lastSp.value}% - ${fmtTime(lastSp.time)}` : '';
+    // No temperature last value (not simulated)
+    const lastBp = (summary.bpSystolic && summary.bpSystolic.value != null) || (summary.bpDiastolic && summary.bpDiastolic.value != null)
+      ? `${summary.bpSystolic && summary.bpSystolic.value != null ? summary.bpSystolic.value : '-'} / ${summary.bpDiastolic && summary.bpDiastolic.value != null ? summary.bpDiastolic.value : '-'} mmHg`
+      : '-';
+    const elBp = qs('#last-bp'); if (elBp) elBp.textContent = lastBp;
+    const elG = qs('#last-glucose'); if (elG) elG.textContent = (summary.glucose && summary.glucose.value != null) ? `${summary.glucose.value} mg/dL` : '-';
+    const elW = qs('#last-weight'); if (elW) elW.textContent = (summary.weight && summary.weight.value != null) ? `${summary.weight.value} kg` : '-';
+    const elS = qs('#last-steps'); if (elS) elS.textContent = (summary.steps && summary.steps.value != null) ? `${summary.steps.value}` : '-';
+    const alerts = summary.recentAlerts || [];
+    const ul = qs('#alerts'); ul.innerHTML = '';
+    alerts.forEach(a => {
+      const li = document.createElement('li');
+      const b = document.createElement('span'); b.className = 'badge'; b.textContent = (a.typeAlerte || a.type || 'ALERTE');
+      const txt = document.createElement('div'); txt.textContent = `${a.message} - ${a.dateCreation || ''}`;
+      li.appendChild(b); li.appendChild(txt); ul.appendChild(li);
+    });
+  } catch (e) {
+    const samples = storage.getSamples(pid);
+    const hr = samples.map(s => s.hr);
+    const spo2 = samples.map(s => s.spo2);
+    // No temperature in fallback rendering
+    drawChart(qs('#chart-hr'), hr, T.hr.color, [T.hr.min, T.hr.max]);
+    drawChart(qs('#chart-spo2'), spo2, T.spo2.color, [T.spo2.min, T.spo2.max]);
+    // No temperature chart in fallback
+    const last = samples[samples.length - 1];
+    qs('#last-hr').textContent = last ? `Dernier: ${last.hr} bpm - ${fmtTime(last.t)}` : '';
+    qs('#last-spo2').textContent = last ? `Dernier: ${last.spo2}% - ${fmtTime(last.t)}` : '';
+    // No temperature last value in fallback
+    const lastBp = last && (last.bpSys != null || last.bpDia != null)
+      ? `${last.bpSys != null ? last.bpSys : '-'} / ${last.bpDia != null ? last.bpDia : '-'} mmHg` : '-';
+    const elBp = qs('#last-bp'); if (elBp) elBp.textContent = lastBp;
+    const elG = qs('#last-glucose'); if (elG) elG.textContent = last && last.glucose != null ? `${last.glucose} mg/dL` : '-';
+    const elW = qs('#last-weight'); if (elW) elW.textContent = last && last.weight != null ? `${last.weight} kg` : '-';
+    const elS = qs('#last-steps'); if (elS) elS.textContent = last && last.steps != null ? `${last.steps}` : '-';
+    renderAlerts();
+  }
 }
 
 function bindUI() {
@@ -66,8 +98,8 @@ async function init() {
   const sel = qs('#db-patient');
   sel.innerHTML = '';
   try {
-    const res = await apiFetch('/api/users?role=PATIENT');
-    if (!res.ok) throw new Error('Chargement des patients échoué');
+    const res = await apiFetch('/api/patients');
+    if (!res.ok) throw new Error('Chargement des patientséchoué');
     const patients = await res.json();
     patients.forEach(u => {
       const o = document.createElement('option');
@@ -80,7 +112,8 @@ async function init() {
       sel.value = state.dbPatient;
     }
   } catch (e) {
-    toast('Impossible de charger la liste des patients', true);
+    // Fallback par défaut
+    if (!state.dbPatient) { state.dbPatient = '1'; try { sel.value = state.dbPatient; } catch {} }
   }
   bindUI();
   renderDashboard();
@@ -95,3 +128,6 @@ async function init() {
 }
 
 window.addEventListener('DOMContentLoaded', () => { init(); });
+
+
+async function pingMonitoring(){try{const r=await fetch('/api/monitoring/health'); if(r.ok){const j=await r.json(); const el=qs('#mon-status'); if(el) el.textContent = j.status==='ok'?'(Monitoring OK)':'(Monitoring ERR)';}}catch{}} window.addEventListener('load',()=>{ pingMonitoring(); setInterval(pingMonitoring,15000);});

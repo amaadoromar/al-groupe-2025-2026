@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC eâ€‘santÃ© â€“ Tableau de bord</title>
+    <title>POC e-santÃ© â€” Tableau de bord</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -12,13 +12,15 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC eâ€‘santÃ©</div>
+      <div class="brand">POC e-santÃ©</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
-        <a href="doctor.html">Médecin</a>`n        <a href="nurse.html">Infirmier</a>`n        <a href="nurses.html">Infirmiers</a>
+        <a href="doctor.html">MÃ©decin</a>
+        <a href="nurse.html">Infirmier</a>
+        <a href="nurses.html">Infirmiers</a>
         <a href="gateway.html">Passerelle</a>
-        <a href="dashboard.html">Tableau de bord</a>
+        <a href="dashboard.html" class="active">Tableau de bord</a>
         <a href="simulator.html">Simulateur</a>
         <a href="reports.html">Rapports</a>
       </nav>
@@ -26,7 +28,7 @@
 
     <main>
       <section>
-        <h2>Tableau de bord clinique</h2>
+        <h2>Tableau de bord clinique <small id="mon-status" style="font-size:12px;color:#9ca3af;margin-left:8px"></small></h2>
         <div class="row card">
           <div>
             <label for="db-patient">Patient</label>
@@ -39,42 +41,55 @@
           </div>
         </div>
 
-        <div class="grid-3">
+        <div class="grid-2">
           <div class="card">
             <h3>Rythme cardiaque</h3>
             <canvas id="chart-hr" width="600" height="200"></canvas>
             <div id="last-hr" class="latest"></div>
           </div>
           <div class="card">
-            <h3>SpOâ‚‚</h3>
+            <h3>SpO2</h3>
             <canvas id="chart-spo2" width="600" height="200"></canvas>
             <div id="last-spo2" class="latest"></div>
-          </div>
-          <div class="card">
-            <h3>TempÃ©rature</h3>
-            <canvas id="chart-temp" width="600" height="200"></canvas>
-            <div id="last-temp" class="latest"></div>
           </div>
         </div>
 
         <div class="card">
-          <h3>Signes vitaux étendus</h3>
+          <h3>Signes vitaux Ã©tendus</h3>
           <div class="grid-3 stats">
             <div class="stat">
-              <div>Tension artérielle</div>
-              <div id="last-bp" class="value">—</div>
+              <div>Tension artÃ©rielle</div>
+              <div id="last-bp" class="value">-</div>
             </div>
             <div class="stat">
-              <div>Glycémie</div>
-              <div id="last-glucose" class="value">—</div>
+              <div>GlycÃ©mie</div>
+              <div id="last-glucose" class="value">-</div>
             </div>
             <div class="stat">
               <div>Poids</div>
-              <div id="last-weight" class="value">—</div>
+              <div id="last-weight" class="value">-</div>
             </div>
             <div class="stat">
               <div>Pas</div>
-              <div id="last-steps" class="value">—</div>
+              <div id="last-steps" class="value">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Tendances</h3>
+          <div class="grid-3">
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Tension (sys/dia)</div>
+              <canvas id="chart-bp" width="600" height="200"></canvas>
+            </div>
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">GlycÃ©mie</div>
+              <canvas id="chart-glucose" width="600" height="200"></canvas>
+            </div>
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Poids</div>
+              <canvas id="chart-weight" width="600" height="200"></canvas>
             </div>
           </div>
         </div>
@@ -99,5 +114,4 @@
     </script>
   </body>
   </html>
-
 

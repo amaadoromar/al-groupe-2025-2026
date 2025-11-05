@@ -108,6 +108,11 @@ public class DataAggregationService {
         return data;
     }
 
+    // Expose alerts fetch for other services (dashboard)
+    public List<AlertSummary> fetchAlerts(Long patientId, Instant start, Instant stop) {
+        return getAlertsForPeriod(patientId, start, stop);
+    }
+
     private String resolvePatientName(Long patientId) {
         String sql = """
             SELECT u.prenom, u.nom

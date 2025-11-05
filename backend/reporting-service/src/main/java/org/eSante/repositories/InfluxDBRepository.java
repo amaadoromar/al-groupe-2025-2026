@@ -4,6 +4,7 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import org.eSante.domain.models.dto.VitalSignsStats;
+import org.eSante.domain.models.dto.DashboardPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -159,6 +160,60 @@ public class InfluxDBRepository {
             """, bucket, ISO.format(start), ISO.format(stop), patientId);
 
         return executeStatsQuery(flux, "Weight", "kg");
+    }
+
+    // ===================== DASHBOARD HELPERS =====================
+    public DashboardPoint getLatestValue(Long patientId, String measurement, String field) {
+        String flux = String.format("""
+            from(bucket: "%s")
+              |> range(start: -7d)
+              |> filter(fn: (r) => r["_measurement"] == "%s")
+              |> filter(fn: (r) => r["patient"] == "%d")
+              |> filter(fn: (r) => r["_field"] == "%s")
+              |> last()
+            """, bucket, measurement, patientId, field);
+
+        try {
+            List<FluxTable> tables = influxDBClient.getQueryApi().query(flux, org);
+            for (FluxTable table : tables) {
+                for (FluxRecord record : table.getRecords()) {
+                    Object value = record.getValueByKey("_value");
+                    Instant t = record.getTime();
+                    if (value instanceof Number val && t != null) {
+                        return new DashboardPoint(ISO.format(t), val.doubleValue());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    public List<DashboardPoint> getSeriesMean(Long patientId, String measurement, String field,
+                                              Instant start, Instant stop, String every) {
+        String flux = String.format("""
+            from(bucket: "%s")
+              |> range(start: time(v: "%s"), stop: time(v: "%s"))
+              |> filter(fn: (r) => r["_measurement"] == "%s")
+              |> filter(fn: (r) => r["patient"] == "%d")
+              |> filter(fn: (r) => r["_field"] == "%s")
+              |> aggregateWindow(every: %s, fn: mean, createEmpty: false)
+              |> keep(columns: ["_time","_value"]) 
+            """, bucket, ISO.format(start), ISO.format(stop), measurement, patientId, field, every);
+
+        List<DashboardPoint> out = new ArrayList<>();
+        try {
+            List<FluxTable> tables = influxDBClient.getQueryApi().query(flux, org);
+            for (FluxTable table : tables) {
+                for (FluxRecord record : table.getRecords()) {
+                    Object value = record.getValueByKey("_value");
+                    Instant t = record.getTime();
+                    if (value instanceof Number val && t != null) {
+                        out.add(new DashboardPoint(ISO.format(t), val.doubleValue()));
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return out;
     }
 
     // --- CORE EXECUTION LOGIC ---

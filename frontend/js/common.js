@@ -82,6 +82,33 @@ export function drawChart(canvas, series, color, yRange, yTicks = 4) {
   ctx.fillText(minY, 8, h - 10); ctx.fillText(maxY, 8, 18);
 }
 
+export function drawChartMulti(canvas, seriesList, colors, yRange, yTicks = 4) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#0a1326';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#1f2937';
+  for (let i = 0; i <= yTicks; i++) {
+    const y = (h - 28) * (i / yTicks) + 8;
+    ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(w - 8, y); ctx.stroke();
+  }
+  const minY = yRange[0], maxY = yRange[1];
+  ctx.fillStyle = '#6b7280'; ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText(minY, 8, h - 10); ctx.fillText(maxY, 8, 18);
+  seriesList.forEach((series, idx) => {
+    const N = series.length;
+    if (!N) return;
+    const xs = series.map((_, i) => 40 + (i / Math.max(1, N - 1)) * (w - 52));
+    const ys = series.map(v => 8 + (1 - (v - minY) / (maxY - minY)) * (h - 36));
+    ctx.strokeStyle = colors[idx % colors.length];
+    ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(xs[0], ys[0]);
+    for (let i = 1; i < N; i++) ctx.lineTo(xs[i], ys[i]);
+    ctx.stroke();
+  });
+}
+
 export function toast(msg, crit = false) {
   const el = qs('#toast');
   el.textContent = msg; el.classList.remove('hidden');
