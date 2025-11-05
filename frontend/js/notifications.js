@@ -89,6 +89,7 @@ export function displayNotification(n) {
   const critical = type === 'ERROR' || type === 'WARNING';
   toast(text, critical);
   if (critical) beep();
+  try { window.dispatchEvent(new CustomEvent('realtime:notification', { detail: n })); } catch {}
   if ('Notification' in window && Notification.permission === 'granted') {
     try { new Notification(title, { body: message }); } catch {}
   }

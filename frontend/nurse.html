@@ -22,6 +22,46 @@
     </header>
 
     <main>
+      <section class="card" style="margin-bottom:16px">
+        <h2>Créer un nouveau patient</h2>
+        <form id="nr-create-patient-form" class="form-grid">
+          <div>
+            <label for="nr-cp-prenom">Prénom</label>
+            <input id="nr-cp-prenom" required />
+          </div>
+          <div>
+            <label for="nr-cp-nom">Nom</label>
+            <input id="nr-cp-nom" required />
+          </div>
+          <div>
+            <label for="nr-cp-email">Email</label>
+            <input id="nr-cp-email" type="email" required />
+          </div>
+          <div>
+            <label for="nr-cp-pass">Mot de passe</label>
+            <input id="nr-cp-pass" type="password" required />
+          </div>
+          <div>
+            <label for="nr-cp-naissance">Date de naissance</label>
+            <input id="nr-cp-naissance" type="date" />
+          </div>
+          <div>
+            <label for="nr-cp-sexe">Sexe</label>
+            <select id="nr-cp-sexe"><option value="">—</option><option value="M">M</option><option value="F">F</option></select>
+          </div>
+          <div>
+            <label for="nr-cp-taille">Taille (cm)</label>
+            <input id="nr-cp-taille" type="number" min="0" />
+          </div>
+          <div>
+            <label for="nr-cp-poids">Poids (kg)</label>
+            <input id="nr-cp-poids" type="number" min="0" step="0.1" />
+          </div>
+          <div style="grid-column:1 / -1" class="actions">
+            <button type="submit" class="btn-primary">Créer le patient</button>
+          </div>
+        </form>
+      </section>
       <section class="card">
         <h2>Patients</h2>
         <div class="row">
@@ -92,10 +132,17 @@
           <ul id="obs-list" class="list"></ul>
         </div>
       </section>
+
+      <section class="card">
+        <h3>Alertes patient</h3>
+        <div class="row">
+          <button id="nr-load-alerts" class="btn-ghost">Actualiser</button>
+        </div>
+        <ul id="nr-alert-history" class="list"></ul>
+      </section>
     </main>
 
     <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth(['INFIRMIER','ADMIN']);</script>
     <script type="module" src="./js/nurse.js"></script>
   </body>
   </html>
-
