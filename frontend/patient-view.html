@@ -1,0 +1,45 @@
+﻿<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e‑santé – Dossier Patient</title>
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="patients.html">Patients</a>
+        <a href="doctor.html">Médecin</a>
+        <a href="gateway.html">Passerelle</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+        <a href="connectivity.html">Connectivité</a>
+      </nav>
+    </header>
+
+    <main class="grid-2">
+      <section class="card">
+        <h2>Formulaire médical</h2>
+        <textarea id="form-json" rows="14" style="width:100%"></textarea>
+        <div class="actions"><button id="btn-save">Enregistrer</button></div>
+      </section>
+      <section class="card">
+        <h2>Observations</h2>
+        <div class="row gap">
+          <label for="obs-type">Type</label>
+          <select id="obs-type"><option value="NOTE">Note</option><option value="QUESTION">Question</option></select>
+        </div>
+        <textarea id="obs-content" rows="6" placeholder="Observation ou question..."></textarea>
+        <div class="actions"><button id="btn-add-obs">Ajouter</button></div>
+        <ul id="obs-list" class="list"></ul>
+      </section>
+    </main>
+
+    <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth(['DOCTEUR','INFIRMIER','ADMIN']);</script>
+    <script type="module" src="./js/patient-view.js"></script>
+  </body>
+  </html>
+

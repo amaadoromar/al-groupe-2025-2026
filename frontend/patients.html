@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Accueil</title>
+    <title>POC e‑santé – Patients</title>
     <link rel="stylesheet" href="css/base.css" />
   </head>
   <body>
-    <main style="padding:24px">
-      <p>Bienvenue. Redirection en cours…</p>
+    <header class="topbar">
+      <div class="brand">POC e‑santé</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
@@ -18,12 +18,20 @@
         <a href="reports.html">Rapports</a>
         <a href="connectivity.html">Connectivité</a>
       </nav>
+    </header>
+
+    <main>
+      <section class="card" style="max-width:900px;margin:auto">
+        <h2>Liste des patients</h2>
+        <div class="row">
+          <input id="search" placeholder="Rechercher…" />
+        </div>
+        <ul id="patients-list" class="list"></ul>
+      </section>
     </main>
-    <script type="module">
-      import { getUser, redirectByRole, applyRoleNav } from './js/auth.js';
-      const u = getUser();
-      if (!u) { window.location.href = 'login.html'; }
-      else { applyRoleNav(); window.location.href = redirectByRole(u.role); }
-    </script>
+
+    <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth(['DOCTEUR','INFIRMIER','ADMIN']);</script>
+    <script type="module" src="./js/patients.js"></script>
   </body>
   </html>
+

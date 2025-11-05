@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Tableau de bord</title>
+    <title>POC eâ€‘santÃ© â€“ Tableau de bord</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -11,12 +11,15 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC e‑santé</div>
+      <div class="brand">POC eâ€‘santÃ©</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
+        <a href="patients.html">Patients</a>
+        <a href="doctor.html">Médecin</a>
         <a href="gateway.html">Passerelle</a>
         <a href="dashboard.html">Tableau de bord</a>
         <a href="reports.html">Rapports</a>
+        <a href="connectivity.html">Connectivité</a>
       </nav>
     </header>
 
@@ -42,12 +45,12 @@
             <div id="last-hr" class="latest"></div>
           </div>
           <div class="card">
-            <h3>SpO₂</h3>
+            <h3>SpOâ‚‚</h3>
             <canvas id="chart-spo2" width="600" height="200"></canvas>
             <div id="last-spo2" class="latest"></div>
           </div>
           <div class="card">
-            <h3>Température</h3>
+            <h3>TempÃ©rature</h3>
             <canvas id="chart-temp" width="600" height="200"></canvas>
             <div id="last-temp" class="latest"></div>
           </div>
@@ -73,4 +76,5 @@
     </script>
   </body>
   </html>
+
 

@@ -86,10 +86,11 @@
           <ul id="users-list" class="list"></ul>
         </div>
       </section>
-    </main>
+  </main>
 
-    <div id="toast" class="toast hidden"></div>
+  <div id="toast" class="toast hidden"></div>
 
+    <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth(['ADMIN']);</script>
     <script type="module" src="./js/admin.js"></script>
     <script type="module">
       import { connectNotifications } from './js/notifications.js';

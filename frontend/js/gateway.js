@@ -12,7 +12,6 @@ function updateGatewayTiles(s) {
 
 function evaluateAlerts(pid, s) {
   const alerts = [];
-  // Basic thresholds also checked in dashboard visually; duplicates are fine here for alerting
   if (s.hr < 45 || s.hr > 110) alerts.push({ type: 'hr', value: s.hr, msg: `Rythme cardiaque ${s.hr} bpm` });
   if (s.spo2 < 90) alerts.push({ type: 'spo2', value: s.spo2, msg: `SpO2 ${s.spo2}%` });
   if (s.temp > 38.5) alerts.push({ type: 'temp', value: s.temp, msg: `Température ${s.temp}°C` });
@@ -64,23 +63,28 @@ function bindUI() {
   qs('#gw-patient').addEventListener('change', (e) => { state.gwPatient = e.target.value; updateGatewayTiles(null); });
 }
 
-function init() {
-  // Populate patients list
-  const patients = storage.getPatients();
+async function init() {
   const sel = qs('#gw-patient');
   sel.innerHTML = '';
-  patients.forEach(p => {
-    const o = document.createElement('option');
-    o.value = p.id; o.textContent = `${p.prenom} ${p.nom} – ${p.dossier || 'sans dossier'}`;
-    sel.appendChild(o);
-  });
-  if (patients[0]) {
-    state.gwPatient = patients[0].id;
-    sel.value = state.gwPatient;
+  try {
+    const res = await apiFetch('/api/patients');
+    if (!res.ok) throw new Error('patients load failed');
+    const patients = await res.json();
+    patients.forEach(p => {
+      const o = document.createElement('option');
+      o.value = String(p.id);
+      o.textContent = `${p.prenom} ${p.nom} (${p.email})`;
+      sel.appendChild(o);
+    });
+    if (patients[0]) {
+      state.gwPatient = String(patients[0].id);
+      sel.value = state.gwPatient;
+    }
+  } catch (e) {
+    toast('Impossible de charger les patients', true);
   }
   bindUI();
   updateGatewayTiles(null);
 }
 
-window.addEventListener('DOMContentLoaded', init);
-
+window.addEventListener('DOMContentLoaded', () => { init(); });
