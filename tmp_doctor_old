@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Médecin</title>
+    <title>POC eâ€‘santÃ© â€“ MÃ©decin</title>
     <link rel="stylesheet" href="css/base.css" />
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC e‑santé</div>
+      <div class="brand">POC eâ€‘santÃ©</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
@@ -56,6 +56,5 @@
     <script type="module" src="./js/doctor.js"></script>
   </body>
   </html>
-
 
 
