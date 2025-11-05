@@ -97,14 +97,17 @@ services:
     restart: always
     ports:
       - "8083:8080"
+      - "12345:8080"
     environment:
       SPRING_MAIL_HOST: smtp.gmail.com
       SPRING_MAIL_PORT: 587
-      SPRING_MAIL_USERNAME: ${NOTIF_MAIL_USERNAME:-}
-      SPRING_MAIL_PASSWORD: ${NOTIF_MAIL_PASSWORD:-}
+      SPRING_MAIL_USERNAME: "alesante87@gmail.com"
+      # Google App Passwords are 16 chars without spaces
+      SPRING_MAIL_PASSWORD: "nwcxhyoytinqiimq"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST: smtp.gmail.com
 
   identity-service:
     build:

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC e-santé — Espace Patient</title>
+    <link rel="stylesheet" href="css/base.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e-santé</div>
+      <div class="spacer"></div>
+      <a id="btn-logout" class="tab" href="#">Se déconnecter</a>
+    </header>
+
+    <main>
+      <section class="card" style="max-width:900px;margin:auto">
+        <h2>Urgence</h2>
+        <div class="actions">
+          <button class="warn" id="pt-danger">Je ne me sens pas bien</button>
+        </div>
+        <div id="pt-status" class="latest" style="margin-top:8px"></div>
+      </section>
+
+      <section class="card" style="max-width:900px;margin:auto">
+        <h2>Historique des alertes</h2>
+        <ul id="pt-history" class="list"></ul>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script type="module">
+      import { ensureAuth, logout } from './js/auth.js';
+      ensureAuth(['PATIENT','ADMIN']);
+      document.getElementById('btn-logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    </script>
+    <script type="module" src="./js/notifications.js"></script>
+    <script type="module" src="./js/patient.js"></script>
+  </body>
+  </html>

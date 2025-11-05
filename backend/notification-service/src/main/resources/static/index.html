@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -195,12 +195,12 @@
 </head>
 <body>
 <div class="container">
-    <h1>🔔 Service de Notification - Test</h1>
+    <h1>ðŸ”” Service de Notification - Test</h1>
 
     <div class="grid">
         <!-- Formulaire Email -->
         <div class="card">
-            <h2>📧 Envoyer un Email</h2>
+            <h2>ðŸ“§ Envoyer un Email</h2>
             <form id="emailForm">
                 <div class="form-group">
                     <label for="emailTo">Destinataire:</label>
@@ -221,7 +221,7 @@
             </form>
         </div>
 
-        <!-- Formulaire Notification Temps Réel -->
+        <!-- Formulaire Notification Temps RÃ©el -->
         <div class="card">
             <h2>Notification Temps Réel</h2>
             <form id="realtimeForm">
@@ -229,7 +229,7 @@
                     <label for="notifType">Type:</label>
                     <select id="notifType" required>
                         <option value="INFO">Info</option>
-                        <option value="SUCCESS">Succès</option>
+                        <option value="SUCCESS">SuccÃ¨s</option>
                         <option value="WARNING">Avertissement</option>
                         <option value="ERROR">Erreur</option>
                     </select>
@@ -251,7 +251,7 @@
 
     <!-- Zone d'affichage des notifications -->
     <div id="notifications">
-        <h2>📬 Notifications Reçues en Temps Réel</h2>
+        <h2>Notifications</h2>
         <div id="statusConnection" class="status disconnected">
             Déconnecté du serveur WebSocket
         </div>
@@ -259,13 +259,13 @@
     </div>
 </div>
 
-<!-- Bibliothèques WebSocket -->
+<!-- BibliothÃ¨ques WebSocket -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
 <script>
     // URL de l'API
-    const API_URL = 'http://localhost:8080';
+    const API_URL = 'http://localhost:12345';
 
     let stompClient = null;
 
@@ -292,13 +292,13 @@
             console.error('Erreur WebSocket:', error);
             updateConnectionStatus(false);
 
-            // Reconnexion automatique après 5 secondes
+            // Reconnexion automatique aprÃ¨s 5 secondes
             setTimeout(connectWebSocket, 5000);
         });
     }
 
     /**
-     * Met à jour le statut de connexion
+     * Met Ã  jour le statut de connexion
      */
     function updateConnectionStatus(connected) {
         const statusDiv = document.getElementById('statusConnection');
@@ -307,12 +307,12 @@
             statusDiv.innerHTML = 'Connecté au serveur WebSocket';
         } else {
             statusDiv.className = 'status disconnected';
-            statusDiv.innerHTML = 'Déconnecté - Reconnexion...';
+            statusDiv.innerHTML = 'Déconnecté - Reconnexion...';d
         }
     }
 
     /**
-     * Affiche une notification reçue
+     * Affiche une notification reÃ§ue
      */
     function displayNotification(notification) {
         const notifList = document.getElementById('notificationList');
@@ -327,7 +327,7 @@
                   <div class="notification-time">${time}</div>
               `;
 
-        // Insère au début de la liste
+        // InsÃ¨re au dÃ©but de la liste
         notifList.insertBefore(notifDiv, notifList.firstChild);
     }
 
@@ -366,7 +366,7 @@
     });
 
     /**
-     * Gestion du formulaire Notification Temps Réel
+     * Gestion du formulaire Notification Temps RÃ©el
      */
     document.getElementById('realtimeForm').addEventListener('submit', async function(e) {
         e.preventDefault();
