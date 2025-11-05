@@ -78,6 +78,13 @@ public class DataAggregationService {
     }
 
     /**
+     * Aggregate data for an arbitrary period [start, stop]
+     */
+    public ReportData aggregateRangeData(Long patientId, Instant start, Instant stop) {
+        return aggregateWeeklyData(patientId, start, stop);
+    }
+
+    /**
      * Aggregates ±72h around alert
      */
     public ReportData aggregatePostEventData(Long patientId, Instant start, Instant stop) {

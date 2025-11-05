@@ -76,6 +76,22 @@ public class ReportController {
     }
 
     /**
+     * Generate a custom report over a given number of minutes.
+     * Example:
+     *   POST /api/reports/generate/custom?patientId=1&minutes=60
+     */
+    @PostMapping("/generate/custom")
+    public ResponseEntity<Report> generateCustomReport(
+            @RequestParam("patientId") Long patientId,
+            @RequestParam("minutes") Long minutes) {
+        if (minutes == null || minutes <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        Report report = reportGeneratorService.generateCustomReport(patientId, minutes);
+        return ResponseEntity.ok(report);
+    }
+
+    /**
      *  Export a generated report as PDF (stored in Base64 format)
      * Example:
      *   GET /api/reports/1/export

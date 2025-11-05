@@ -113,6 +113,37 @@ public class ReportGeneratorService {
     }
 
     @Transactional
+    public Report generateCustomReport(Long patientId, long minutes) {
+        logger.info("Generating custom report for patient {} over last {} minutes", patientId, minutes);
+
+        Instant stop = Instant.now();
+        Instant start = stop.minus(minutes, ChronoUnit.MINUTES);
+
+        Report report = new Report(patientId, "CUSTOM");
+        report.setPeriodStart(LocalDateTime.ofInstant(start, ZoneId.systemDefault()));
+        report.setPeriodEnd(LocalDateTime.ofInstant(stop, ZoneId.systemDefault()));
+
+        try {
+            ReportData data = dataAggregationService.aggregateRangeData(patientId, start, stop);
+            byte[] pdfBytes = pdfExportService.generateCustomPDF(data);
+
+            report.setExportFormat("PDF_BASE64");
+            report.setContent(Base64.getEncoder().encodeToString(pdfBytes));
+            report.setFilePath(storeReportFile(pdfBytes, report, "custom"));
+            report.setStatus("READY");
+            report.setSummary("Custom report for last " + minutes + " minutes generated successfully");
+        } catch (Exception e) {
+            logger.error(" Error generating custom report for patient {}", patientId, e);
+            report.setStatus("ERROR");
+            report.setSummary("Error: " + e.getMessage());
+            report.setContent(null);
+            report.setFilePath(null);
+        }
+
+        return reportRepository.save(report);
+    }
+
+    @Transactional
     public Report generatePostEventReport(Long patientId, Long alertId) {
         logger.info("Generating post-event report for patient {} (alert {})", patientId, alertId);
 

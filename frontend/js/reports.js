@@ -3,7 +3,21 @@ import { apiFetch } from './auth.js';
 
 const state = { rpPatient: '' };
 
-function generateReport(pid, minutes) {
+async function generateServerReport(pid, minutes) {
+  const url = `/api/reports/generate/custom?patientId=${encodeURIComponent(pid)}&minutes=${encodeURIComponent(minutes)}`;
+  const res = await fetch(url, { method: 'POST' });
+  if (!res.ok) throw new Error('report generation failed');
+  return res.json();
+}
+
+async function loadReportBase64(id) {
+  const url = `/api/reports/${encodeURIComponent(id)}/base64`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  return res.text();
+}
+
+function renderLocalReport(pid, minutes) {
   const sel = qs('#rp-patient');
   const label = sel.options[sel.selectedIndex]?.textContent || '';
   const cutoff = now() - minutes * 60 * 1000;
@@ -34,8 +48,60 @@ function generateReport(pid, minutes) {
   qs('#report-preview').innerHTML = html;
 }
 
+async function generateReport(pid, minutes) {
+  try {
+    const report = await generateServerReport(pid, minutes);
+    const b64 = await loadReportBase64(report.id);
+    const summary = report.summary || '';
+    const exportUrl = `/api/reports/${report.id}/export`;
+    const html = `
+      <div class="report">
+        <h3>Rapport généré (serveur)</h3>
+        <div>Période: ${minutes} min</div>
+        ${summary ? `<pre class="summary">${summary.replace(/</g,'&lt;')}</pre>` : ''}
+        <div style="margin:10px 0">
+          <a href="${exportUrl}" target="_blank">Ouvrir le PDF</a>
+        </div>
+        ${b64 ? `<object data="data:application/pdf;base64,${b64}" type="application/pdf" width="100%" height="600px"></object>` : ''}
+      </div>`;
+    qs('#report-preview').innerHTML = html;
+  } catch (e) {
+    // Fallback to local, in-browser summary if server not reachable
+    renderLocalReport(pid, minutes);
+  }
+}
+
+async function loadHistory(pid) {
+  const box = qs('#report-history');
+  box.innerHTML = '<div>Chargement…</div>';
+  try {
+    const res = await fetch(`/api/reports/patient/${encodeURIComponent(pid)}`);
+    if (!res.ok) throw new Error('history failed');
+    const items = await res.json();
+    if (!Array.isArray(items) || !items.length) {
+      box.innerHTML = '<div>Aucun rapport trouvé.</div>';
+      return;
+    }
+    const rows = items.map(r => {
+      const dt = r.reportDate || r.createdAt || '';
+      const type = r.reportType || 'N/A';
+      const st = r.status || '';
+      const id = r.id;
+      const link = `/api/reports/${id}/export`;
+      return `<tr><td>${dt}</td><td>${type}</td><td>${st}</td><td><a href="${link}" target="_blank">Ouvrir le PDF</a></td></tr>`;
+    }).join('');
+    box.innerHTML = `
+      <table class="table">
+        <thead><tr><th>Date</th><th>Type</th><th>Statut</th><th>PDF</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch (e) {
+    box.innerHTML = '<div>Impossible de charger l\'historique.</div>';
+  }
+}
+
 function bindUI() {
-  qs('#rp-patient').addEventListener('change', (e) => { state.rpPatient = e.target.value; });
+  qs('#rp-patient').addEventListener('change', (e) => { state.rpPatient = e.target.value; if (state.rpPatient) loadHistory(state.rpPatient); });
   qs('#rp-generate').addEventListener('click', () => {
     if (!state.rpPatient) return;
     const minutes = +qs('#rp-window').value;
@@ -58,6 +124,7 @@ async function init() {
     });
     if (patients[0]) { state.rpPatient = String(patients[0].id); sel.value = state.rpPatient; }
   } catch {}
+  if (state.rpPatient) { loadHistory(state.rpPatient); }
   bindUI();
 }
 

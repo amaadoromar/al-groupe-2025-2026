@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulateur & Telegraf - Statut</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">POC e-santé</div>
+      <nav class="nav">
+        <a href="admin.html">Administration</a>
+        <a href="patients.html">Patients</a>
+        <a href="doctor.html">Médecin</a>
+        <a href="nurse.html">Infirmier</a>
+        <a href="nurses.html">Infirmiers</a>
+        <a href="gateway.html">Passerelle</a>
+        <a href="dashboard.html">Tableau de bord</a>
+        <a href="reports.html">Rapports</a>
+        <a href="simulator.html" class="active">Simulateur</a>
+      </nav>
+    </header>
+
+    <main>
+      <section>
+        <h2>Statut Simulateur & Flux Telegraf</h2>
+
+        <div class="card row">
+          <label class="switch"><input type="checkbox" id="mq-toggle" checked /><span>MQTT</span></label>
+          <input id="mq-url" value="ws://localhost:9001" style="width:260px;margin-left:8px" />
+          <div class="spacer"></div>
+          <div id="mq-state">Déconnecté</div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3>Débit messages</h3>
+            <div id="rate" class="latest">- msg/s</div>
+            <div id="rate5" class="latest">- sur 5s</div>
+          </div>
+          <div class="card">
+            <h3>Patient</h3>
+            <div class="row">
+              <label for="patient-id">ID</label>
+              <input id="patient-id" placeholder="1" style="width:80px;margin-left:8px" />
+              <button id="bind" class="secondary" style="margin-left:12px">Suivre</button>
+            </div>
+            <div id="last-line" class="latest" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <h3>Alertes (via Telegraf)</h3>
+            <ul id="alerts" class="list"></ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Mesures récentes</h3>
+          <table style="width:100%">
+            <thead><tr><th>Type</th><th>Valeur</th><th>Horodatage</th></tr></thead>
+            <tbody id="samples"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./js/simulator.js"></script>
+  </body>
+  </html>
+

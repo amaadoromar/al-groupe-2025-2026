@@ -44,6 +44,13 @@ public class PDFExportService {
     }
 
     // ============================================================
+    // CUSTOM (ON-DEMAND) PDF
+    // ============================================================
+    public byte[] generateCustomPDF(ReportData data) {
+        return generatePDF(data, "ON-DEMAND HEALTH REPORT", "Summary for selected time window");
+    }
+
+    // ============================================================
     // CORE LOGIC
     // ============================================================
     private byte[] generatePDF(ReportData data, String title, String subtitle) {
