@@ -26,4 +26,9 @@ public class EmailNotificationRequest {
     private Long patientId;
     private String authorEmail;
 
+    // Optional attachment fields (e.g., PDF in Base64)
+    private String attachmentName;
+    private String attachmentBase64;
+    private String attachmentContentType;
+
 }

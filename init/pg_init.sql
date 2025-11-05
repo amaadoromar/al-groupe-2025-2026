@@ -129,7 +129,7 @@ INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role_id) VALUES
                                                                          ('Moreau', 'Thomas', 'thomas.moreau@esante.com', 'pass123', 3),
                                                                          ('Simon', 'Julie', 'julie.simon@esante.com', 'pass123', 3),
                                                                          ('Laurent', 'Marc', 'marc.laurent@esante.com', 'pass123', 3),
-                                                                         ('Michel', 'Anne', 'anne.michel@esante.com', 'pass123', 3),
+                                                                         ('Omar', 'Amaador', 'amaadoromar@gmail.com', 'pass123', 3),
                                                                          ('Dupont', 'Alice', 'alice.dupont@patient.com', 'pass123', 4),
                                                                          ('Durand', 'Bob', 'bob.durand@patient.com', 'pass123', 4),
                                                                          ('Lemoine', 'Charles', 'charles.lemoine@patient.com', 'pass123', 4),

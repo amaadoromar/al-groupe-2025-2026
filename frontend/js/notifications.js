@@ -113,6 +113,18 @@ export async function sendTestNotification(opts = {}) {
   return res.text();
 }
 
+export async function sendMailHtml({ to, subject, html, attachmentName, attachmentBase64, attachmentContentType }, opts = {}) {
+  const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');
+  const body = { to, subject, message: html, attachmentName, attachmentBase64, attachmentContentType };
+  const res = await fetch(baseUrl + '/api/notifications/email/send-html', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('Failed to send email: ' + res.status);
+  return res.json().catch(() => ({}));
+}
+
 // Send an email via notification-service
 export async function sendEmailNotification(payload, opts = {}) {
   const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');

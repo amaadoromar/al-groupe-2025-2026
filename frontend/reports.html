@@ -47,6 +47,26 @@
 
         <div id="report-preview" class="card"></div>
 
+        <div id="doctor-tools" class="card" style="display:none">
+          <h3>Explications du médecin et envoi</h3>
+          <div class="form-grid">
+            <div style="grid-column: span 3">
+              <label for="rp-subject">Objet du courriel</label>
+              <input id="rp-subject" placeholder="Rapport médical" />
+            </div>
+            <div style="grid-column: span 3">
+              <label for="rp-notes">Explications et recommandations</label>
+              <textarea id="rp-notes" rows="6" style="width:100%" placeholder="Ajouter vos explications destinées au patient..."></textarea>
+            </div>
+            <div class="row" style="grid-column: span 3; align-items:center">
+              <label class="switch"><input type="checkbox" id="rp-send-email" checked /><span>Envoyer au patient par e-mail</span></label>
+              <div class="spacer"></div>
+              <button id="rp-send" class="warn">Envoyer</button>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:8px">Le message inclura un lien vers le dernier rapport généré si disponible.</div>
+        </div>
+
         <h3>Historique des rapports</h3>
         <div id="report-history" class="card"></div>
       </section>
@@ -55,6 +75,7 @@
     <div id="toast" class="toast hidden"></div>
     <script type="module">import { ensureAuth } from './js/auth.js'; ensureAuth();</script>
     <script type="module" src="./js/reports.js"></script>
+    <script type="module" src="./js/doctor-tools.js"></script>
     <script type="module">
       import { connectNotifications } from './js/notifications.js';
       connectNotifications();

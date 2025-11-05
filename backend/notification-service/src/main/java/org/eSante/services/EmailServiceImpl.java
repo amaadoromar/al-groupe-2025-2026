@@ -4,6 +4,7 @@ import org.eSante.interfaces.EmailService;
 import org.eSante.model.EmailNotificationRequest;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -44,6 +45,18 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(request.getTo());
             helper.setSubject(request.getSubject());
             helper.setText(request.getMessage(), true);
+
+            if (request.getAttachmentBase64() != null && !request.getAttachmentBase64().isBlank()) {
+                try {
+                    byte[] bytes = java.util.Base64.getDecoder().decode(request.getAttachmentBase64());
+                    String name = (request.getAttachmentName() == null || request.getAttachmentName().isBlank()) ? "rapport.pdf" : request.getAttachmentName();
+                    String ctype = (request.getAttachmentContentType() == null || request.getAttachmentContentType().isBlank()) ? "application/pdf" : request.getAttachmentContentType();
+                    ByteArrayDataSource dataSource = new ByteArrayDataSource(bytes, ctype);
+                    helper.addAttachment(name, dataSource);
+                } catch (Exception ex) {
+                    log.warn("Failed to attach base64 content: {}", ex.getMessage());
+                }
+            }
 
             mailSender.send(mimeMessage);
 

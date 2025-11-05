@@ -1,7 +1,8 @@
-import { qs, storage, now, min, max, mean, fmtTime } from './common.js';
-import { apiFetch } from './auth.js';
+import { sendMailHtml } from './notifications.js';
+import { qs, storage, now, min, max, mean, fmtTime, toast } from './common.js';
+import { apiFetch, getUser } from './auth.js';
 
-const state = { rpPatient: '' };
+const state = { rpPatient: '', patients: [], lastReportId: null, lastReportBase64: null };
 
 async function generateServerReport(pid, minutes) {
   const url = `/api/reports/generate/custom?patientId=${encodeURIComponent(pid)}&minutes=${encodeURIComponent(minutes)}`;
@@ -45,7 +46,7 @@ function renderLocalReport(pid, minutes) {
       </ul>
       <div style="margin-top:12px"><button onclick="window.print()">Imprimer / Exporter en PDF</button></div>
     </div>`;
-  qs('#report-preview').innerHTML = html;
+  qs('#report-preview').innerHTML = html; state.lastReportBase64 = b64 || null;
 }
 
 async function generateReport(pid, minutes) {
@@ -56,15 +57,15 @@ async function generateReport(pid, minutes) {
     const exportUrl = `/api/reports/${report.id}/export`;
     const html = `
       <div class="report">
-        <h3>Rapport gÃ©nÃ©rÃ© (serveur)</h3>
-        <div>PÃ©riode: ${minutes} min</div>
+        <h3>Rapport généré (serveur)</h3>
+        <div>Période: ${minutes} min</div>
         ${summary ? `<pre class="summary">${summary.replace(/</g,'&lt;')}</pre>` : ''}
-        <div style="margin:10px 0">
+        <div style="margin:10px 0"><em>Le PDF a été généré.</em></div>
           <a href="${exportUrl}" target="_blank">Ouvrir le PDF</a>
         </div>
         ${b64 ? `<object data="data:application/pdf;base64,${b64}" type="application/pdf" width="100%" height="600px"></object>` : ''}
       </div>`;
-    qs('#report-preview').innerHTML = html;
+    qs('#report-preview').innerHTML = html; state.lastReportBase64 = b64 || null;
   } catch (e) {
     // Fallback to local, in-browser summary if server not reachable
     renderLocalReport(pid, minutes);
@@ -129,3 +130,9 @@ async function init() {
 }
 
 window.addEventListener('DOMContentLoaded', () => { init(); });
+
+
+
+
+
+
