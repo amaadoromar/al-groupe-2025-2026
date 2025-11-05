@@ -1,8 +1,10 @@
 import { qs, storage, clamp, now, toast } from './common.js';
 import { sendRealtimeNotification } from './notifications.js';
+import { connectMqtt, disconnectMqtt, isMqttConnected, subscribePatientVitals } from './mqtt-client.js';
 
 let sim = { timer: null, base: { hr: 76, spo2: 97, temp: 36.8 } };
 const state = { gwPatient: '' };
+let unsubscribeVitals = null;
 
 function updateGatewayTiles(s) {
   qs('#gw-hr').textContent = s ? `${s.hr} bpm` : '— bpm';
@@ -52,6 +54,7 @@ function forceSpike() {
 function bindUI() {
   qs('#gw-start').addEventListener('click', () => {
     if (!state.gwPatient) return toast('Sélectionnez un patient');
+    if (qs('#gw-mqtt').checked) return toast('Mode MQTT actif');
     clearInterval(sim.timer);
     sim.timer = setInterval(() => simulateStep(qs('#gw-random').checked), 1000);
     toast('Simulation démarrée');
@@ -61,7 +64,27 @@ function bindUI() {
   });
   qs('#gw-spike').addEventListener('click', () => { forceSpike(); simulateStep(false); });
 
-  qs('#gw-patient').addEventListener('change', (e) => { state.gwPatient = e.target.value; updateGatewayTiles(null); });
+  qs('#gw-patient').addEventListener('change', (e) => {
+    state.gwPatient = e.target.value; updateGatewayTiles(null);
+    if (qs('#gw-mqtt').checked) setupMqttSubscription();
+  });
+
+  qs('#gw-mqtt').addEventListener('change', () => {
+    const checked = qs('#gw-mqtt').checked;
+    if (checked) {
+      const url = qs('#gw-mqtt-url').value.trim();
+      connectMqtt(url);
+      const wait = () => {
+        if (isMqttConnected()) { toast('Connecté au broker MQTT'); setupMqttSubscription(); }
+        else setTimeout(wait, 300);
+      };
+      wait();
+    } else {
+      if (unsubscribeVitals) { try { unsubscribeVitals(); } catch {} unsubscribeVitals = null; }
+      disconnectMqtt();
+      toast('MQTT déconnecté');
+    }
+  });
 }
 
 function init() {
@@ -84,3 +107,19 @@ function init() {
 
 window.addEventListener('DOMContentLoaded', init);
 
+function setupMqttSubscription() {
+  if (!state.gwPatient) return;
+  if (unsubscribeVitals) { try { unsubscribeVitals(); } catch {} unsubscribeVitals = null; }
+  unsubscribeVitals = subscribePatientVitals(state.gwPatient, (sample, raw) => {
+    // push to storage if we have at least hr or spo2 or temp
+    if (sample.hr == null && sample.spo2 == null && sample.temp == null) return;
+    storage.pushSample(state.gwPatient, sample);
+    updateGatewayTiles({ hr: sample.hr ?? 0, spo2: sample.spo2 ?? 0, temp: sample.temp ?? 0 });
+    // Evaluate alerts based on received sample
+    evaluateAlerts(state.gwPatient, {
+      hr: sample.hr ?? 76,
+      spo2: sample.spo2 ?? 97,
+      temp: sample.temp ?? 36.8
+    });
+  });
+}

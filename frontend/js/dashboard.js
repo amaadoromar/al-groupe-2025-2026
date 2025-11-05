@@ -37,6 +37,17 @@ function renderDashboard() {
   qs('#last-hr').textContent = last ? `Dernier: ${last.hr} bpm – ${fmtTime(last.t)}` : '';
   qs('#last-spo2').textContent = last ? `Dernier: ${last.spo2}% – ${fmtTime(last.t)}` : '';
   qs('#last-temp').textContent = last ? `Dernier: ${last.temp}°C – ${fmtTime(last.t)}` : '';
+  // Extended vitals (if available)
+  const lastBp = last && (last.bpSys != null || last.bpDia != null)
+    ? `${last.bpSys != null ? last.bpSys : '—'} / ${last.bpDia != null ? last.bpDia : '—'} mmHg`
+    : '—';
+  const lastGlucose = last && last.glucose != null ? `${last.glucose} mg/dL` : '—';
+  const lastWeight = last && last.weight != null ? `${last.weight} kg` : '—';
+  const lastSteps = last && last.steps != null ? `${last.steps}` : '—';
+  const elBp = qs('#last-bp'); if (elBp) elBp.textContent = lastBp;
+  const elG = qs('#last-glucose'); if (elG) elG.textContent = lastGlucose;
+  const elW = qs('#last-weight'); if (elW) elW.textContent = lastWeight;
+  const elS = qs('#last-steps'); if (elS) elS.textContent = lastSteps;
   renderAlerts();
 }
 
@@ -73,6 +84,14 @@ async function init() {
   }
   bindUI();
   renderDashboard();
+  // Refresh charts when samples/alerts update in other tabs (e.g., gateway via MQTT)
+  window.addEventListener('storage', (e) => {
+    if (!state.dbPatient) return;
+    if (!e.key) return;
+    if (e.key === 'samples:' + state.dbPatient || e.key.startsWith('samples:') || e.key.startsWith('alerts:')) {
+      renderDashboard();
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => { init(); });
