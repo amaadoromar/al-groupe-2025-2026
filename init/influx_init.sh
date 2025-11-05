@@ -2,6 +2,9 @@
 set -eu
 
 HOST_URL=${INFLUX_HOST_URL:-http://localhost:8086}
+# Normalize potential CRLF (Windows) line endings that can sneak into variables
+# and break URL parsing by the influx CLI inside the container.
+HOST_URL=$(printf "%s" "$HOST_URL" | tr -d '\r')
 echo "Waiting for InfluxDB to be ready at ${HOST_URL}..."
 
 # Run once: guard file for idempotency
