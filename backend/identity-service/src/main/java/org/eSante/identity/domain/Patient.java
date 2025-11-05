@@ -34,6 +34,31 @@ public class Patient {
     @Column(name = "form_json")
     private String formJson;
 
+    // Structured fields extracted from form_json for querying
+    @Column(name = "fumeur", length = 3)
+    private String fumeur; // OUI/NON
+
+    @Column(name = "alcool", length = 3)
+    private String alcool; // OUI/NON
+
+    @Column(name = "activite", length = 12)
+    private String activite; // PEU/MODEREE/REGULIERE
+
+    @Column(name = "douleur")
+    private Integer douleur; // 0-10
+
+    @Column(name = "symptomes", columnDefinition = "text")
+    private String symptomes;
+
+    @Column(name = "medicaments", columnDefinition = "text")
+    private String medicaments;
+
+    @Column(name = "allergies", columnDefinition = "text")
+    private String allergies;
+
+    @Column(name = "antecedents", columnDefinition = "text")
+    private String antecedents;
+
     public Integer getId() { return id; }
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
@@ -49,5 +74,22 @@ public class Patient {
     public void setPathologiePrincipale(String pathologiePrincipale) { this.pathologiePrincipale = pathologiePrincipale; }
     public String getFormJson() { return formJson; }
     public void setFormJson(String formJson) { this.formJson = formJson; }
+
+    public String getFumeur() { return fumeur; }
+    public void setFumeur(String fumeur) { this.fumeur = fumeur; }
+    public String getAlcool() { return alcool; }
+    public void setAlcool(String alcool) { this.alcool = alcool; }
+    public String getActivite() { return activite; }
+    public void setActivite(String activite) { this.activite = activite; }
+    public Integer getDouleur() { return douleur; }
+    public void setDouleur(Integer douleur) { this.douleur = douleur; }
+    public String getSymptomes() { return symptomes; }
+    public void setSymptomes(String symptomes) { this.symptomes = symptomes; }
+    public String getMedicaments() { return medicaments; }
+    public void setMedicaments(String medicaments) { this.medicaments = medicaments; }
+    public String getAllergies() { return allergies; }
+    public void setAllergies(String allergies) { this.allergies = allergies; }
+    public String getAntecedents() { return antecedents; }
+    public void setAntecedents(String antecedents) { this.antecedents = antecedents; }
 }
 
