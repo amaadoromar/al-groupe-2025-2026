@@ -21,6 +21,23 @@ al-groupe-2025-2026/
 
 ## Quick Start
 
+### E2E Data Streaming (Complete System)
+
+Run the full end-to-end data pipeline with MQTT, Node-RED, and InfluxDB:
+
+```bash
+# Start complete system
+cp .env.e2e .env
+docker compose -f docker-compose-e2e.yml up -d
+
+# Access services:
+# - MQTT UI: http://localhost:8080
+# - Node-RED: http://localhost:1880/admin
+# - InfluxDB: http://localhost:8086
+```
+
+See [E2E-QUICKSTART.md](E2E-QUICKSTART.md) for detailed instructions.
+
 ### Frontend Demo (Standalone)
 
 POC e-santé – Frontend (sans back)
@@ -67,6 +84,13 @@ docker compose up -d
 Access MQTT Web UI at http://localhost:8080
 
 See [infrastructure/README.md](infrastructure/README.md) for detailed documentation.
+
+## Documentation
+
+- [E2E-QUICKSTART.md](E2E-QUICKSTART.md) - Complete data streaming setup guide
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flows
+- [NODE-RED-GUIDE.md](NODE-RED-GUIDE.md) - Node-RED configuration and debugging
+- [infrastructure/README.md](infrastructure/README.md) - Infrastructure components
 
 ## Components
 

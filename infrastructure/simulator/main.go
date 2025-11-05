@@ -277,8 +277,12 @@ func generateVitalPayload(patientID int, config VitalConfig, forceAlert bool) Vi
 		}
 	}
 
-	// Generate realistic metadata
-	battery := 60 + rand.Intn(40) // 60-100%
+	// Generate realistic metadata with occasional low battery for alerts
+	battery := 60 + rand.Intn(40) // 60-100% normally
+	if forceAlert && rand.Float64() < 0.3 { // 30% chance of low battery on alert cycles
+		battery = 10 + rand.Intn(25) // 10-35% (will trigger <30 alert)
+	}
+	
 	quality := "good"
 	if forceAlert || rand.Float64() < 0.1 {
 		quality = "poor"
