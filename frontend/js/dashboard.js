@@ -118,6 +118,9 @@ async function init() {
   }
   bindUI();
   renderDashboard();
+  // Refresh charts every second to mimic real-time updates
+  if (_dashTimer) clearInterval(_dashTimer);
+  _dashTimer = setInterval(() => { try { renderDashboard(); } catch {} }, 1000);
   // Refresh charts when samples/alerts update in other tabs (e.g., gateway via MQTT)
   window.addEventListener('storage', (e) => {
     if (!state.dbPatient) return;
@@ -129,6 +132,7 @@ async function init() {
 }
 
 window.addEventListener('DOMContentLoaded', () => { init(); });
+window.addEventListener('beforeunload', () => { if (_dashTimer) clearInterval(_dashTimer); });
 
 
 async function pingMonitoring(){try{const r=await fetch('/api/monitoring/health'); if(r.ok){const j=await r.json(); const el=qs('#mon-status'); if(el) el.textContent = j.status==='ok'?'(Monitoring OK)':'(Monitoring ERR)';}}catch{}} window.addEventListener('load',()=>{ pingMonitoring(); setInterval(pingMonitoring,15000);});
