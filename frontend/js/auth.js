@@ -90,6 +90,11 @@ export function applyRoleNav() {
   const user = getUser();
   const nav = document.querySelector('.nav');
   if (!nav || !user) return;
+  // If unified header is present, skip altering links; header.js already built the nav per role
+  const header = document.querySelector('header.topbar');
+  if (header && (header.getAttribute('data-unified') === '1' || window.__UNIFIED_HEADER__)) {
+    return;
+  }
   // Cleanup accidental literal "`n" artifacts in static HTML
   try { nav.innerHTML = nav.innerHTML.replace(/`n\s*/g, '\n'); } catch {}
   const role = user.role;
