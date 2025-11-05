@@ -1,5 +1,6 @@
 import { qs, storage, clamp, now, toast } from './common.js';
 import { sendRealtimeNotification } from './notifications.js';
+import { apiFetch } from './auth.js';
 
 let sim = { timer: null, base: { hr: 76, spo2: 97, temp: 36.8 } };
 const state = { gwPatient: '' };
