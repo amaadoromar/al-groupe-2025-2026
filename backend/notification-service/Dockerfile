@@ -15,6 +15,6 @@ RUN mvn -Dmaven.test.skip=true clean package \
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/notification-service/target/app.jar app.jar
-EXPOSE 8080
+EXPOSE 8090
 ENTRYPOINT ["java", "-jar", "app.jar"]
 

@@ -3,11 +3,14 @@
 
 import { toast, beep } from './common.js';
 
-const DEFAULT_BASE = 'http://localhost:8080';
+// Default WebSocket base (SockJS/STOMP)
+// Updated to port 12345 per configuration
+const DEFAULT_BASE = 'http://localhost:12345';
 
 export function getNotifBaseUrl() {
   return (
     window.NOTIF_BASE_URL ||
+    localStorage.getItem('notifWsBaseUrl') ||
     localStorage.getItem('notifBaseUrl') ||
     DEFAULT_BASE
   );
@@ -107,6 +110,19 @@ export async function sendTestNotification(opts = {}) {
   const res = await fetch(baseUrl + '/api/notifications/realtime/test');
   if (!res.ok) throw new Error('Failed to trigger test notification: ' + res.status);
   return res.text();
+}
+
+// Send an email via notification-service
+export async function sendEmailNotification(payload, opts = {}) {
+  const baseUrl = (opts.baseUrl || getNotifBaseUrl()).replace(/\/$/, '');
+  const { to, subject, message, patientId, authorEmail } = payload || {};
+  const res = await fetch(baseUrl + '/api/notifications/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to, subject, message, patientId, authorEmail })
+  });
+  if (!res.ok) throw new Error('Failed to send email: ' + res.status);
+  return res.json().catch(() => ({}));
 }
 
 // Auto-connect on load

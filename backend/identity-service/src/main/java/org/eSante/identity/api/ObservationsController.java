@@ -54,10 +54,16 @@ public class ObservationsController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','DOCTEUR','INFIRMIER')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTEUR','INFIRMIER','PATIENT')")
     public ResponseEntity<Integer> create(@RequestBody ObservationCreateRequest req) {
-        Patient p = patients.findById(req.patientId).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
         Utilisateur author = currentUser();
+        Patient p;
+        // If a PATIENT is posting, bind to their own patient record regardless of body
+        if (author.getRole() != null && "PATIENT".equalsIgnoreCase(author.getRole().getNom())) {
+            p = patients.findByUtilisateur(author).orElseThrow(() -> new IllegalArgumentException("Patient profile not found for user"));
+        } else {
+            p = patients.findById(req.patientId).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        }
         Observation o = new Observation();
         o.setPatient(p);
         o.setAuthor(author);

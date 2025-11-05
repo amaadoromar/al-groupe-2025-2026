@@ -2,6 +2,8 @@ package fr.polytech.notification.service.controllers;
 
 import fr.polytech.notification.service.interfaces.EmailService;
 import fr.polytech.notification.service.interfaces.RealtimeNotificationService;
+import fr.polytech.notification.service.interfaces.NotificationHistoryService;
+import fr.polytech.notification.service.model.EmailNotificationLog;
 import fr.polytech.notification.service.model.EmailNotificationRequest;
 import fr.polytech.notification.service.model.NotificationResponse;
 import jakarta.validation.Valid;
@@ -20,6 +22,7 @@ public class EmailController {
 
     private final EmailService emailService;
     private final RealtimeNotificationService realtimeNotificationService;
+    private final NotificationHistoryService historyService;
 
     @PostMapping("/send")
     public ResponseEntity<NotificationResponse> sendEmail(
@@ -29,6 +32,14 @@ public class EmailController {
             log.info("Received email notification request to: {}", request.getTo());
 
             emailService.sendSimpleMail(request);
+            historyService.addEmail(new EmailNotificationLog(
+                    java.time.Instant.now(),
+                    request.getTo(),
+                    request.getSubject(),
+                    request.getMessage(),
+                    request.getPatientId(),
+                    request.getAuthorEmail()
+            ));
 
             realtimeNotificationService.sendSuccess(
                     "Mail Sent",
@@ -50,6 +61,17 @@ public class EmailController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(NotificationResponse.error("Error: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<java.util.List<EmailNotificationLog>> history(
+            @RequestParam(name = "patientId", required = false) Long patientId,
+            @RequestParam(name = "to", required = false) String to,
+            @RequestParam(name = "authorEmail", required = false) String authorEmail,
+            @RequestParam(name = "limit", required = false, defaultValue = "20") Integer limit
+    ) {
+        int lim = (limit != null && limit > 0) ? Math.min(limit, 200) : 20;
+        return ResponseEntity.ok(historyService.listEmails(patientId, to, authorEmail, lim));
     }
 
     @PostMapping("/send-html")

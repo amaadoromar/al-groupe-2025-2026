@@ -6,6 +6,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,10 +19,16 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username:}")
+    private String fromAddress;
+
     @Override
     public void sendSimpleMail(EmailNotificationRequest request) throws Exception {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            if (fromAddress != null && !fromAddress.isBlank()) {
+                message.setFrom(fromAddress);
+            }
             message.setTo(request.getTo());
             message.setSubject(request.getSubject());
             message.setText(request.getMessage());
@@ -40,7 +47,9 @@ public class EmailServiceImpl implements EmailService {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
+            if (fromAddress != null && !fromAddress.isBlank()) {
+                helper.setFrom(fromAddress);
+            }
             helper.setTo(request.getTo());
             helper.setSubject(request.getSubject());
             helper.setText(request.getMessage(), true);

@@ -63,7 +63,7 @@ export function redirectByRole(role) {
     case 'ADMIN': return 'admin.html';
     case 'DOCTEUR':
     case 'INFIRMIER': return 'doctor.html';
-    case 'PATIENT':
+    case 'PATIENT': return 'patient.html';
     case 'PROCHE': return 'dashboard.html';
     default: return 'dashboard.html';
   }

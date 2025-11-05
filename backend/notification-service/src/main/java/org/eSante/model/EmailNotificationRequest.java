@@ -22,4 +22,8 @@ public class EmailNotificationRequest {
     @NotBlank(message = "Message must not be blank")
     private String message;
 
+    // Optional metadata to help correlate and build history
+    private Long patientId;
+    private String authorEmail;
+
 }
