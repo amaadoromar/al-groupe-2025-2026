@@ -1,4 +1,4 @@
-﻿import { qs, storage, drawChart, drawChartMulti, fmtTime, T, toast } from './common.js';
+import { qs, storage, drawChart, drawChartMulti, computeRange, fmtTime, T, toast } from './common.js';
 import { apiFetch } from './auth.js';
 
 const state = { dbPatient: '' };
@@ -20,12 +20,13 @@ function renderAlerts() {
     b.className = 'badge ' + (a.type === 'hr' ? (a.value > T.hr.warnHi || a.value < T.hr.warnLo ? 'danger' : 'ok') : a.type === 'spo2' ? (a.value < T.spo2.warnLo ? 'danger' : 'ok') : (a.value > T.temp.warnHi ? 'warn' : 'ok'));
     b.textContent = a.type.toUpperCase();
     const txt = document.createElement('div');
-    txt.textContent = `${a.msg}  ${fmtTime(a.t)}`;
+    txt.textContent = `${a.msg} ? ${fmtTime(a.t)}`;
     li.appendChild(b); li.appendChild(txt);
     ul.appendChild(li);
   });
 }
 
+let _dashTimer = null;
 async function renderDashboard() {
   const pid = state.dbPatient;
   if (!pid) return;
@@ -33,15 +34,15 @@ async function renderDashboard() {
     const summary = await fetchSummary(pid, 60);
     const hrSeries = (summary.seriesHeartRate || []).map(p => p.value);
     const spo2Series = (summary.seriesSpO2 || []).map(p => p.value);
-    drawChart(qs('#chart-hr'), hrSeries, T.hr.color, [T.hr.min, T.hr.max]);
-    drawChart(qs('#chart-spo2'), spo2Series, T.spo2.color, [T.spo2.min, T.spo2.max]);
+    drawChart(qs('#chart-hr'), hrSeries, T.hr.color, computeRange(hrSeries, T.hr.min, T.hr.max), T.hr.unit);
+    drawChart(qs('#chart-spo2'), spo2Series, T.spo2.color, computeRange(spo2Series, T.spo2.min, T.spo2.max), T.spo2.unit);
     const bpSys = (summary.seriesBloodPressureSys || []).map(p => p.value);
     const bpDia = (summary.seriesBloodPressureDia || []).map(p => p.value);
     const gluc = (summary.seriesGlucose || []).map(p => p.value);
     const weight = (summary.seriesWeight || []).map(p => p.value);
-    drawChartMulti(qs('#chart-bp'), [bpSys, bpDia], ['#ef4444','#f59e0b'], [40, 180]);
-    drawChart(qs('#chart-glucose'), gluc, '#22d3ee', [50, 250]);
-    drawChart(qs('#chart-weight'), weight, '#a78bfa', [40, 140]);
+    drawChartMulti(qs('#chart-bp'), [bpSys, bpDia], ['#ef4444','#f59e0b'], computeRange(bpSys.concat(bpDia), T.bp.min, T.bp.max), T.bp.unit, 4, ['Systolique','Diastolique']);
+    drawChart(qs('#chart-glucose'), gluc, T.glucose.color, computeRange(gluc, T.glucose.min, T.glucose.max), T.glucose.unit);
+    drawChart(qs('#chart-weight'), weight, T.weight.color, computeRange(weight, T.weight.min, T.weight.max), T.weight.unit);
     // No temperature chart (not simulated)
     const lastHr = summary.heartRate; qs('#last-hr').textContent = lastHr ? `Dernier: ${lastHr.value} bpm - ${fmtTime(lastHr.time)}` : '';
     const lastSp = summary.spo2; qs('#last-spo2').textContent = lastSp ? `Dernier: ${lastSp.value}% - ${fmtTime(lastSp.time)}` : '';
@@ -131,3 +132,4 @@ window.addEventListener('DOMContentLoaded', () => { init(); });
 
 
 async function pingMonitoring(){try{const r=await fetch('/api/monitoring/health'); if(r.ok){const j=await r.json(); const el=qs('#mon-status'); if(el) el.textContent = j.status==='ok'?'(Monitoring OK)':'(Monitoring ERR)';}}catch{}} window.addEventListener('load',()=>{ pingMonitoring(); setInterval(pingMonitoring,15000);});
+

@@ -1,9 +1,11 @@
 // Shared utilities, constants and storage across pages
 
 export const T = {
-  hr: { key: 'hr', label: 'BPM', color: '#22c55e', min: 30, max: 160, warnLo: 45, warnHi: 110 },
-  spo2: { key: 'spo2', label: '%', color: '#38bdf8', min: 70, max: 100, warnLo: 90, warnHi: 100 },
-  temp: { key: 'temp', label: '°C', color: '#f59e0b', min: 34, max: 42, warnLo: 36, warnHi: 38.5 }
+  hr:     { key: 'hr',     label: 'FC',    unit: 'bpm',  color: '#22c55e', min: 40,  max: 180, warnLo: 45, warnHi: 110 },
+  spo2:   { key: 'spo2',   label: 'SpO2',  unit: '%',    color: '#38bdf8', min: 85,  max: 100, warnLo: 90, warnHi: 100 },
+  bp:     { key: 'bp',     label: 'BP',    unit: 'mmHg', color: '#ef4444', min: 60,  max: 180 },
+  glucose:{ key: 'glucose',label: 'Gly',   unit: 'mg/dL',color: '#22d3ee', min: 50,  max: 250 },
+  weight: { key: 'weight', label: 'Poids', unit: 'kg',   color: '#a78bfa', min: 40,  max: 140 }
 };
 
 export const qs = (s) => document.querySelector(s);
@@ -58,17 +60,14 @@ export const storage = {
   }
 };
 
-export function drawChart(canvas, series, color, yRange, yTicks = 4) {
+export function drawChart(canvas, series, color, yRange, unit = '', yTicks = 4) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = '#0a1326';
   ctx.fillRect(0, 0, w, h);
   ctx.strokeStyle = '#1f2937';
-  for (let i = 0; i <= yTicks; i++) {
-    const y = (h - 28) * (i / yTicks) + 8;
-    ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(w - 8, y); ctx.stroke();
-  }
+  for (let i = 0; i <= yTicks; i++) { const y = (h - 28) * (i / yTicks) + 8; ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(w - 8, y); ctx.stroke(); }
   const minY = yRange[0], maxY = yRange[1];
   const N = series.length;
   if (!N) return;
@@ -79,23 +78,30 @@ export function drawChart(canvas, series, color, yRange, yTicks = 4) {
   for (let i = 1; i < N; i++) ctx.lineTo(xs[i], ys[i]);
   ctx.stroke();
   ctx.fillStyle = '#6b7280'; ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(minY, 8, h - 10); ctx.fillText(maxY, 8, 18);
+  for (let i = 0; i <= yTicks; i++) {
+    const v = minY + (i / yTicks) * (maxY - minY);
+    const y = 8 + (1 - (v - minY) / (maxY - minY)) * (h - 36);
+    const label = `${Math.round(v)}${unit ? ' ' + unit : ''}`;
+    ctx.fillText(label, 8, Math.min(h - 10, Math.max(18, y + 4)));
+  }
 }
 
-export function drawChartMulti(canvas, seriesList, colors, yRange, yTicks = 4) {
+export function drawChartMulti(canvas, seriesList, colors, yRange, unit = '', yTicks = 4, legends = []) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = '#0a1326';
   ctx.fillRect(0, 0, w, h);
   ctx.strokeStyle = '#1f2937';
-  for (let i = 0; i <= yTicks; i++) {
-    const y = (h - 28) * (i / yTicks) + 8;
-    ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(w - 8, y); ctx.stroke();
-  }
+  for (let i = 0; i <= yTicks; i++) { const y = (h - 28) * (i / yTicks) + 8; ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(w - 8, y); ctx.stroke(); }
   const minY = yRange[0], maxY = yRange[1];
   ctx.fillStyle = '#6b7280'; ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(minY, 8, h - 10); ctx.fillText(maxY, 8, 18);
+  for (let i = 0; i <= yTicks; i++) {
+    const v = minY + (i / yTicks) * (maxY - minY);
+    const y = 8 + (1 - (v - minY) / (maxY - minY)) * (h - 36);
+    const label = `${Math.round(v)}${unit ? ' ' + unit : ''}`;
+    ctx.fillText(label, 8, Math.min(h - 10, Math.max(18, y + 4)));
+  }
   seriesList.forEach((series, idx) => {
     const N = series.length;
     if (!N) return;
@@ -107,6 +113,31 @@ export function drawChartMulti(canvas, seriesList, colors, yRange, yTicks = 4) {
     for (let i = 1; i < N; i++) ctx.lineTo(xs[i], ys[i]);
     ctx.stroke();
   });
+  // Legend (top-right)
+  if (legends && legends.length) {
+    let x = w - 8; let y = 12;
+    ctx.font = '12px system-ui, sans-serif';
+    for (let i = legends.length - 1; i >= 0; i--) {
+      const name = legends[i]; const col = colors[i % colors.length];
+      const textW = ctx.measureText(name).width;
+      x = w - 16 - textW - 16; // box + gap
+      ctx.fillStyle = col; ctx.fillRect(x, y - 8, 12, 12);
+      ctx.fillStyle = '#cbd5e1'; ctx.fillText(name, x + 16, y + 2);
+      y += 18;
+    }
+  }
+}
+
+export function computeRange(series, defMin, defMax, padRatio = 0.1) {
+  if (!series || !series.length) return [defMin, defMax];
+  const smin = Math.min(...series.filter(v => typeof v === 'number'));
+  const smax = Math.max(...series.filter(v => typeof v === 'number'));
+  if (!isFinite(smin) || !isFinite(smax)) return [defMin, defMax];
+  const span = Math.max(1, smax - smin);
+  const pad = span * padRatio;
+  const lo = Math.floor(Math.max(defMin, smin - pad));
+  const hi = Math.ceil(Math.min(defMax, smax + pad));
+  return lo < hi ? [lo, hi] : [defMin, defMax];
 }
 
 export function toast(msg, crit = false) {
