@@ -70,6 +70,9 @@ button{
   background:linear-gradient(180deg, var(--primary), var(--primary-deep));
   color:#fff;cursor:pointer;
 }
+button.btn-sm{padding:8px 10px;border-radius:10px}
+button.btn-primary{border-color:var(--primary);background:linear-gradient(180deg, var(--primary), var(--primary-deep));color:#fff}
+button.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--primary-deep)}
 button:hover{filter:brightness(1.03)}
 button.secondary{
   background:#fff;color:var(--primary-deep);

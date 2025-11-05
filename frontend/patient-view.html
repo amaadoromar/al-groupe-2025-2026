@@ -3,28 +3,68 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Dossier Patient</title>
+    <title>POC e-santé - Dossier Patient</title>
     <link rel="stylesheet" href="css/base.css" />
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC e‑santé</div>
+      <div class="brand">POC e-santé</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
-        <a href="doctor.html">Médecin</a>
+        <a href="doctor.html">MÃ©decin</a>`n        <a href="nurse.html">Infirmier</a>`n        <a href="nurses.html">Infirmiers</a>
         <a href="gateway.html">Passerelle</a>
         <a href="dashboard.html">Tableau de bord</a>
         <a href="reports.html">Rapports</a>
-        <a href="connectivity.html">Connectivité</a>
       </nav>
     </header>
 
     <main class="grid-2">
       <section class="card">
-        <h2>Formulaire médical</h2>
-        <textarea id="form-json" rows="14" style="width:100%"></textarea>
-        <div class="actions"><button id="btn-save">Enregistrer</button></div>
+        <h2>Formulaire mÃ©dical</h2>
+        <div class="form-grid">
+          <div>
+            <label for="vf-fumeur">Fumeur</label>
+            <select id="vf-fumeur"><option value="NON">Non</option><option value="OUI">Oui</option></select>
+          </div>
+          <div>
+            <label for="vf-alcool">Alcool</label>
+            <select id="vf-alcool"><option value="NON">Non</option><option value="OUI">Oui</option></select>
+          </div>
+          <div>
+            <label for="vf-activite">ActivitÃ© physique</label>
+            <select id="vf-activite"><option value="PEU">Peu</option><option value="MODEREE">ModÃ©rÃ©e</option><option value="REGULIERE">RÃ©guliÃ¨re</option></select>
+          </div>
+          <div>
+            <label for="vf-taille">Taille (cm)</label>
+            <input id="vf-taille" type="number" min="0" />
+          </div>
+          <div>
+            <label for="vf-poids">Poids (kg)</label>
+            <input id="vf-poids" type="number" min="0" step="0.1" />
+          </div>
+          <div>
+            <label for="vf-douleur">Douleur (0â€“10)</label>
+            <input id="vf-douleur" type="number" min="0" max="10" />
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="vf-symptomes">SymptÃ´mes actuels</label>
+            <textarea id="vf-symptomes" rows="3"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="vf-medicaments">MÃ©dicaments actuels</label>
+            <textarea id="vf-medicaments" rows="3"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="vf-allergies">Allergies</label>
+            <textarea id="vf-allergies" rows="2"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="vf-antecedents">AntÃ©cÃ©dents mÃ©dicaux</label>
+            <textarea id="vf-antecedents" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="actions"><button class="btn-primary" id="btn-save">Enregistrer</button></div>
       </section>
       <section class="card">
         <h2>Observations</h2>
@@ -32,7 +72,7 @@
           <label for="obs-type">Type</label>
           <select id="obs-type"><option value="NOTE">Note</option><option value="QUESTION">Question</option></select>
         </div>
-        <textarea id="obs-content" rows="6" placeholder="Observation ou question..."></textarea>
+        <textarea id="obs-content" rows="5" placeholder="Observation ou questionâ€¦ (Ctrl+EntrÃ©e pour envoyer)"></textarea>
         <div class="actions"><button id="btn-add-obs">Ajouter</button></div>
         <ul id="obs-list" class="list"></ul>
       </section>
@@ -42,4 +82,3 @@
     <script type="module" src="./js/patient-view.js"></script>
   </body>
   </html>
-

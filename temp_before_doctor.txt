@@ -1,35 +1,37 @@
-import { apiFetch } from './auth.js';
+﻿import { apiFetch } from './auth.js';
 const $ = (s) => document.querySelector(s);
 
 async function loadPatients() {
-  const res = await apiFetch('/api/patients');
-  if (!res.ok) throw new Error('Chargement des patients échoué');
+  const res = await apiFetch('/api/users?role=PATIENT');
+  if (!res.ok) throw new Error('Chargement patients (utilisateurs) échoué');
   const list = await res.json();
   const sel = $('#doc-patient'); sel.innerHTML = '';
-  list.forEach(p => {
+  list.forEach(u => {
     const o = document.createElement('option');
-    o.value = p.id; o.textContent = `${p.prenom} ${p.nom} (${p.email})`;
+    o.value = u.id; o.textContent = `${u.prenom} ${u.nom} (${u.email})`;
     sel.appendChild(o);
   });
   if (list.length) { sel.value = String(list[0].id); }
 }
 
-function getSelectedPatientId() {
-  return parseInt($('#doc-patient').value, 10);
+async function ensurePatientId() {
+  const userId = parseInt($('#doc-patient').value, 10);
+  const res = await apiFetch(`/api/patients/by-user/${userId}/ensure`, { method: 'POST' });
+  if (!res.ok) throw new Error('Impossible d’assurer le patient');
+  const data = await res.json();
+  return data.patientId;
 }
 
 async function loadForm() {
-  const pid = getSelectedPatientId();
-  if (!pid) return;
-  const res = await apiFetch(`/api/patients/form?patientId=${pid}`);
+  const pid = await ensurePatientId();
+  const res = await apiFetch(`/api/patients/${pid}/form`);
   if (!res.ok) return;
   const data = await res.json();
   try { fromModel(JSON.parse(data.form || '{}')); } catch { fromModel({}); }
 }
 
 async function loadObservations() {
-  const pid = getSelectedPatientId();
-  if (!pid) return;
+  const pid = await ensurePatientId();
   const res = await apiFetch(`/api/observations?patientId=${pid}`);
   if (!res.ok) return;
   const list = await res.json();
@@ -47,19 +49,18 @@ async function loadObservations() {
 }
 
 async function addObservation() {
-  const pid = getSelectedPatientId();
+  const pid = await ensurePatientId();
   const content = $('#obs-content').value.trim();
-  if (!pid || !content) return;
+  if (!content) return;
   const type = ($('#obs-type').value || 'NOTE');
   const res = await apiFetch('/api/observations', { method: 'POST', body: JSON.stringify({ patientId: pid, content, type }) });
   if (res.status === 201) { $('#obs-content').value = ''; await loadObservations(); }
 }
 
 async function saveForm() {
-  const pid = getSelectedPatientId();
-  if (!pid) return;
+  const pid = await ensurePatientId();
   const form = JSON.stringify(toModel());
-  await apiFetch(`/api/patients/form?patientId=${pid}`, { method: 'PUT', body: JSON.stringify({ form }) });
+  await apiFetch(`/api/patients/${pid}/form`, { method: 'PUT', body: JSON.stringify({ form }) });
 }
 
 async function init() {

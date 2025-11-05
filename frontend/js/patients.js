@@ -5,11 +5,11 @@ function render(list) {
   const ul = $('#patients-list');
   const q = ($('#search').value || '').toLowerCase();
   ul.innerHTML = '';
-  list.filter(u => (`${u.prenom} ${u.nom} ${u.email}`).toLowerCase().includes(q)).forEach(u => {
+  list.filter(p => (`${p.prenom} ${p.nom} ${p.email}`).toLowerCase().includes(q)).forEach(p => {
     const li = document.createElement('li');
-    const id = document.createElement('span'); id.className = 'pill'; id.textContent = u.id;
-    const name = document.createElement('div'); name.textContent = `${u.prenom} ${u.nom} (${u.email})`;
-    const link = document.createElement('a'); link.href = `patient-view.html?userId=${u.id}`; link.textContent = 'Consulter';
+    const id = document.createElement('span'); id.className = 'pill'; id.textContent = p.id;
+    const name = document.createElement('div'); name.textContent = `${p.prenom} ${p.nom} (${p.email})`;
+    const link = document.createElement('a'); link.href = `patient-view.html?patientId=${p.id}`; link.textContent = 'Consulter';
     li.appendChild(id); li.appendChild(name); li.appendChild(link);
     ul.appendChild(li);
   });
@@ -17,7 +17,7 @@ function render(list) {
 
 async function init() {
   try {
-    const res = await apiFetch('/api/users?role=PATIENT');
+    const res = await apiFetch('/api/patients');
     if (!res.ok) throw new Error('Erreur chargement');
     const list = await res.json();
     render(list);

@@ -95,6 +95,16 @@ DO $$ BEGIN
     ALTER TABLE patients ADD COLUMN form_json TEXT;
 EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
+-- Extend patients with structured fields extracted from form_json
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN fumeur VARCHAR(3); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN alcool VARCHAR(3); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN activite VARCHAR(12); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN douleur INT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN symptomes TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN medicaments TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN allergies TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN antecedents TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+
 -- ====================================================
 -- 6. DONNÉES D'INITIALISATION
 -- ====================================================

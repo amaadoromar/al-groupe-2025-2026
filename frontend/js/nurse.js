@@ -5,7 +5,7 @@ async function loadPatients() {
   const res = await apiFetch('/api/patients');
   if (!res.ok) throw new Error('Chargement des patients échoué');
   const list = await res.json();
-  const sel = $('#doc-patient'); sel.innerHTML = '';
+  const sel = $('#nr-patient'); sel.innerHTML = '';
   list.forEach(p => {
     const o = document.createElement('option');
     o.value = p.id; o.textContent = `${p.prenom} ${p.nom} (${p.email})`;
@@ -15,7 +15,7 @@ async function loadPatients() {
 }
 
 function getSelectedPatientId() {
-  return parseInt($('#doc-patient').value, 10);
+  return parseInt($('#nr-patient').value, 10);
 }
 
 async function loadForm() {
@@ -69,7 +69,7 @@ async function init() {
   $('#btn-add-obs').addEventListener('click', addObservation);
   $('#btn-save-form').addEventListener('click', saveForm);
   $('#obs-content').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); addObservation(); } });
-  $('#doc-patient').addEventListener('change', () => { loadForm(); loadObservations(); });
+  $('#nr-patient').addEventListener('change', () => { loadForm(); loadObservations(); });
   try { await loadForm(); await loadObservations(); } catch {}
 }
 
@@ -77,29 +77,30 @@ window.addEventListener('DOMContentLoaded', init);
 
 function toModel(){
   return {
-    fumeur: $('#df-fumeur')?.value || 'NON',
-    alcool: $('#df-alcool')?.value || 'NON',
-    activite: $('#df-activite')?.value || 'PEU',
-    tailleCm: $('#df-taille')?.value ? parseInt($('#df-taille').value, 10) : null,
-    poidsKg: $('#df-poids')?.value ? parseFloat($('#df-poids').value) : null,
-    douleur: $('#df-douleur')?.value ? parseInt($('#df-douleur').value, 10) : 0,
-    symptomes: $('#df-symptomes')?.value?.trim() || '',
-    medicaments: $('#df-medicaments')?.value?.trim() || '',
-    allergies: $('#df-allergies')?.value?.trim() || '',
-    antecedents: $('#df-antecedents')?.value?.trim() || ''
+    fumeur: $('#nf-fumeur')?.value || 'NON',
+    alcool: $('#nf-alcool')?.value || 'NON',
+    activite: $('#nf-activite')?.value || 'PEU',
+    tailleCm: $('#nf-taille')?.value ? parseInt($('#nf-taille').value, 10) : null,
+    poidsKg: $('#nf-poids')?.value ? parseFloat($('#nf-poids').value) : null,
+    douleur: $('#nf-douleur')?.value ? parseInt($('#nf-douleur').value, 10) : 0,
+    symptomes: $('#nf-symptomes')?.value?.trim() || '',
+    medicaments: $('#nf-medicaments')?.value?.trim() || '',
+    allergies: $('#nf-allergies')?.value?.trim() || '',
+    antecedents: $('#nf-antecedents')?.value?.trim() || ''
   };
 }
 
 function fromModel(m){
   if (!m) return;
-  if ($('#df-fumeur')) $('#df-fumeur').value = m.fumeur || 'NON';
-  if ($('#df-alcool')) $('#df-alcool').value = m.alcool || 'NON';
-  if ($('#df-activite')) $('#df-activite').value = m.activite || 'PEU';
-  if ($('#df-taille')) $('#df-taille').value = m.tailleCm ?? '';
-  if ($('#df-poids')) $('#df-poids').value = m.poidsKg ?? '';
-  if ($('#df-douleur')) $('#df-douleur').value = m.douleur ?? 0;
-  if ($('#df-symptomes')) $('#df-symptomes').value = m.symptomes || '';
-  if ($('#df-medicaments')) $('#df-medicaments').value = m.medicaments || '';
-  if ($('#df-allergies')) $('#df-allergies').value = m.allergies || '';
-  if ($('#df-antecedents')) $('#df-antecedents').value = m.antecedents || '';
+  if ($('#nf-fumeur')) $('#nf-fumeur').value = m.fumeur || 'NON';
+  if ($('#nf-alcool')) $('#nf-alcool').value = m.alcool || 'NON';
+  if ($('#nf-activite')) $('#nf-activite').value = m.activite || 'PEU';
+  if ($('#nf-taille')) $('#nf-taille').value = m.tailleCm ?? '';
+  if ($('#nf-poids')) $('#nf-poids').value = m.poidsKg ?? '';
+  if ($('#nf-douleur')) $('#nf-douleur').value = m.douleur ?? 0;
+  if ($('#nf-symptomes')) $('#nf-symptomes').value = m.symptomes || '';
+  if ($('#nf-medicaments')) $('#nf-medicaments').value = m.medicaments || '';
+  if ($('#nf-allergies')) $('#nf-allergies').value = m.allergies || '';
+  if ($('#nf-antecedents')) $('#nf-antecedents').value = m.antecedents || '';
 }
+

@@ -73,6 +73,13 @@ public class PatientsController {
         return ResponseEntity.ok(out);
     }
 
+    // Alternate variant using request parameter for easier client integration
+    @GetMapping("/form")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTEUR','INFIRMIER')")
+    public ResponseEntity<Map<String,Object>> getFormByQuery(@RequestParam("patientId") Integer id) {
+        return getForm(id);
+    }
+
     public static class PatientFormUpdate { public String form; }
 
     @PutMapping("/{id}/form")
@@ -80,8 +87,47 @@ public class PatientsController {
     public ResponseEntity<Void> updateForm(@PathVariable Integer id, @RequestBody PatientFormUpdate body) {
         Patient p = patients.findById(id).orElseThrow(() -> new NoSuchElementException("Patient not found"));
         p.setFormJson(body.form != null ? body.form : "{}");
+        // Try to map some structured fields from JSON into columns (optional)
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper om = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode n = om.readTree(p.getFormJson());
+            if (n.has("tailleCm") && !n.get("tailleCm").isNull()) {
+                p.setTailleCm(n.get("tailleCm").asInt());
+            }
+            if (n.has("poidsKg") && !n.get("poidsKg").isNull()) {
+                java.math.BigDecimal kg = new java.math.BigDecimal(n.get("poidsKg").asDouble());
+                p.setPoidsKg(kg);
+            }
+            if (n.has("fumeur")) p.setFumeur(safeUpper(n.get("fumeur")));
+            if (n.has("alcool")) p.setAlcool(safeUpper(n.get("alcool")));
+            if (n.has("activite")) p.setActivite(safeUpper(n.get("activite")));
+            if (n.has("douleur") && !n.get("douleur").isNull()) p.setDouleur(n.get("douleur").asInt());
+            if (n.has("symptomes")) p.setSymptomes(safeStr(n.get("symptomes")));
+            if (n.has("medicaments")) p.setMedicaments(safeStr(n.get("medicaments")));
+            if (n.has("allergies")) p.setAllergies(safeStr(n.get("allergies")));
+            if (n.has("antecedents")) p.setAntecedents(safeStr(n.get("antecedents")));
+            // Pathologie principale could be derived from antecedents/symptomes if desired
+        } catch (Exception ignore) {}
         patients.save(p);
         return ResponseEntity.noContent().build();
+    }
+
+    // Alternate variant using request parameter for easier client integration
+    @PutMapping("/form")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTEUR','INFIRMIER')")
+    public ResponseEntity<Void> updateFormByQuery(@RequestParam("patientId") Integer id, @RequestBody PatientFormUpdate body) {
+        return updateForm(id, body);
+    }
+
+    private static String safeUpper(com.fasterxml.jackson.databind.JsonNode n) {
+        if (n == null || n.isNull()) return null;
+        String s = n.asText("").trim();
+        return s.isEmpty() ? null : s.toUpperCase();
+    }
+    private static String safeStr(com.fasterxml.jackson.databind.JsonNode n) {
+        if (n == null || n.isNull()) return null;
+        String s = n.asText("").trim();
+        return s.isEmpty() ? null : s;
     }
 
     @PostMapping("/by-user/{userId}/ensure")

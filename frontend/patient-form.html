@@ -1,14 +1,14 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Formulaire patient</title>
+    <title>POC e-santé — Formulaire patient</title>
     <link rel="stylesheet" href="css/base.css" />
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC e‑santé</div>
+      <div class="brand">POC e-santé</div>
       <nav class="nav">
         <a href="dashboard.html">Tableau de bord</a>
         <a href="patient-form.html" class="active">Formulaire</a>
@@ -19,9 +19,49 @@
     <main>
       <section class="card" style="max-width:900px;margin:auto">
         <h2>Mon formulaire médical</h2>
-        <p>Contenu JSON libre (antécédents, allergies, traitements, etc.).</p>
-        <textarea id="form-json" rows="16" style="width:100%" placeholder='{"allergies":"..."}'></textarea>
-        <div class="actions"><button id="btn-save">Enregistrer</button></div>
+        <div class="form-grid">
+          <div>
+            <label for="pf-fumeur">Fumeur</label>
+            <select id="pf-fumeur"><option value="NON">Non</option><option value="OUI">Oui</option></select>
+          </div>
+          <div>
+            <label for="pf-alcool">Consommation dâ€™alcool</label>
+            <select id="pf-alcool"><option value="NON">Non</option><option value="OUI">Oui</option></select>
+          </div>
+          <div>
+            <label for="pf-activite">ActivitÃ© physique</label>
+            <select id="pf-activite"><option value="PEU">Peu</option><option value="MODEREE">ModÃ©rÃ©e</option><option value="REGULIERE">RÃ©guliÃ¨re</option></select>
+          </div>
+          <div>
+            <label for="pf-taille">Taille (cm)</label>
+            <input id="pf-taille" type="number" min="0" placeholder="170" />
+          </div>
+          <div>
+            <label for="pf-poids">Poids (kg)</label>
+            <input id="pf-poids" type="number" min="0" step="0.1" placeholder="70" />
+          </div>
+          <div>
+            <label for="pf-douleur">Douleur actuelle (0â€“10)</label>
+            <input id="pf-douleur" type="number" min="0" max="10" step="1" placeholder="0" />
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="pf-symptomes">SymptÃ´mes actuels</label>
+            <textarea id="pf-symptomes" rows="3" placeholder="Ex: fiÃ¨vre, touxâ€¦"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="pf-medicaments">MÃ©dicaments actuels</label>
+            <textarea id="pf-medicaments" rows="3" placeholder="Nom, dosage, frÃ©quenceâ€¦"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="pf-allergies">Allergies</label>
+            <textarea id="pf-allergies" rows="2" placeholder="Ex: pÃ©nicilline, arachideâ€¦"></textarea>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="pf-antecedents">AntÃ©cÃ©dents mÃ©dicaux</label>
+            <textarea id="pf-antecedents" rows="3" placeholder="Maladies chroniques, chirurgies, etc."></textarea>
+          </div>
+        </div>
+        <div class="actions"><button class="btn-primary" id="btn-save">Enregistrer</button></div>
       </section>
     </main>
 
@@ -29,4 +69,3 @@
     <script type="module" src="./js/patient-form.js"></script>
   </body>
   </html>
-
