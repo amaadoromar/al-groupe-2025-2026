@@ -72,8 +72,8 @@ var vitalConfigs = []VitalConfig{
 		Unit:       "bpm",
 		NormalMin:  60,
 		NormalMax:  100,
-		AlertMin:   45,
-		AlertMax:   110,
+		AlertMin:   40,
+		AlertMax:   150, // Changed from 110 to 150 to match Telegraf threshold
 	},
 	{
 		Type:       SpO2,
@@ -211,14 +211,14 @@ func connectMQTT(config Config) mqtt.Client {
 	// Retry connection
 	for i := 0; i < 10; i++ {
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
-			log.Printf("⏳ Failed to connect to MQTT broker (attempt %d/10): %v", i+1, token.Error())
+			log.Printf("Failed to connect to MQTT broker (attempt %d/10): %v", i+1, token.Error())
 			time.Sleep(3 * time.Second)
 		} else {
 			return client
 		}
 	}
 	
-	log.Fatal("❌ Could not connect to MQTT broker after 10 attempts")
+	log.Fatal("Could not connect to MQTT broker after 10 attempts")
 	return nil
 }
 
@@ -229,7 +229,7 @@ func emitVitalsForPatient(client mqtt.Client, patientID int, forceAlert bool) {
 		
 		jsonData, err := json.Marshal(payload)
 		if err != nil {
-			log.Printf("❌ Error marshaling payload: %v", err)
+			log.Printf("Error marshaling payload: %v", err)
 			continue
 		}
 
@@ -238,7 +238,7 @@ func emitVitalsForPatient(client mqtt.Client, patientID int, forceAlert bool) {
 		token.Wait()
 		
 		if token.Error() != nil {
-			log.Printf("❌ Error publishing to %s: %v", topic, token.Error())
+			log.Printf("Error publishing to %s: %v", topic, token.Error())
 		}
 	}
 }
@@ -277,8 +277,12 @@ func generateVitalPayload(patientID int, config VitalConfig, forceAlert bool) Vi
 		}
 	}
 
-	// Generate realistic metadata
-	battery := 60 + rand.Intn(40) // 60-100%
+	// Generate realistic metadata with occasional low battery for alerts
+	battery := 60 + rand.Intn(40) // 60-100% normally
+	if forceAlert && rand.Float64() < 0.3 { // 30% chance of low battery on alert cycles
+		battery = 10 + rand.Intn(25) // 10-35% (will trigger <30 alert)
+	}
+	
 	quality := "good"
 	if forceAlert || rand.Float64() < 0.1 {
 		quality = "poor"

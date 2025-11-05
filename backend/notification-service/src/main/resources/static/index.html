@@ -223,7 +223,7 @@
 
         <!-- Formulaire Notification Temps Réel -->
         <div class="card">
-            <h2>⚡ Notification Temps Réel</h2>
+            <h2>Notification Temps Réel</h2>
             <form id="realtimeForm">
                 <div class="form-group">
                     <label for="notifType">Type:</label>
@@ -253,7 +253,7 @@
     <div id="notifications">
         <h2>📬 Notifications Reçues en Temps Réel</h2>
         <div id="statusConnection" class="status disconnected">
-            ❌ Déconnecté du serveur WebSocket
+            Déconnecté du serveur WebSocket
         </div>
         <div id="notificationList"></div>
     </div>
@@ -280,7 +280,7 @@
 
         // Connexion
         stompClient.connect({}, function(frame) {
-            console.log('✅ Connecté au WebSocket:', frame);
+            console.log('Connecté au WebSocket:', frame);
             updateConnectionStatus(true);
 
             // S'abonner au topic des notifications
@@ -289,7 +289,7 @@
                 displayNotification(notif);
             });
         }, function(error) {
-            console.error('❌ Erreur WebSocket:', error);
+            console.error('Erreur WebSocket:', error);
             updateConnectionStatus(false);
 
             // Reconnexion automatique après 5 secondes
@@ -304,10 +304,10 @@
         const statusDiv = document.getElementById('statusConnection');
         if (connected) {
             statusDiv.className = 'status connected';
-            statusDiv.innerHTML = '✅ Connecté au serveur WebSocket';
+            statusDiv.innerHTML = 'Connecté au serveur WebSocket';
         } else {
             statusDiv.className = 'status disconnected';
-            statusDiv.innerHTML = '❌ Déconnecté - Reconnexion...';
+            statusDiv.innerHTML = 'Déconnecté - Reconnexion...';
         }
     }
 

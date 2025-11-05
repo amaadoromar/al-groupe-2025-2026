@@ -21,6 +21,25 @@ al-groupe-2025-2026/
 
 ## Quick Start
 
+### E2E Data Streaming (Complete System)
+
+Run the full end-to-end data pipeline with MQTT, Telegraf, and InfluxDB:
+
+```bash
+# Start complete system
+cp .env.e2e .env
+docker compose -f docker-compose-e2e.yml up -d
+
+# Access services:
+# - MQTT UI: http://localhost:8080
+# - InfluxDB: http://localhost:8086
+
+# Monitor stream processing logs:
+docker logs -f esante_telegraf
+```
+
+See [E2E-QUICKSTART.md](E2E-QUICKSTART.md) for detailed instructions.
+
 ### Frontend Demo (Standalone)
 
 POC e-santé – Frontend (sans back)
@@ -67,6 +86,13 @@ docker compose up -d
 Access MQTT Web UI at http://localhost:8080
 
 See [infrastructure/README.md](infrastructure/README.md) for detailed documentation.
+
+## Documentation
+
+- [E2E-QUICKSTART.md](E2E-QUICKSTART.md) - Complete data streaming setup guide
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flows
+- [infrastructure/telegraf/TELEGRAF-GUIDE.md](infrastructure/telegraf/TELEGRAF-GUIDE.md) - Telegraf configuration and troubleshooting
+- [infrastructure/README.md](infrastructure/README.md) - Infrastructure components
 
 ## Components
 
