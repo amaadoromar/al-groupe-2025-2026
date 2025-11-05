@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-echo "⏳ Attente du démarrage d'InfluxDB..."
+echo "Attente du démarrage d'InfluxDB..."
 
 # Attend que l'API InfluxDB réponde
 until influx ping &> /dev/null; do
-  echo "⏳ InfluxDB n'est pas encore prêt..."
+  echo "InfluxDB n'est pas encore prêt..."
   sleep 5
 done
 
-echo "📊 Insertion de BEAUCOUP de données de test dans InfluxDB..."
+echo "Insertion de BEAUCOUP de données de test dans InfluxDB..."
 
 # Variables globales
 TOKEN="my-super-secret-auth-token"
@@ -24,7 +24,7 @@ DAY=$((24 * HOUR))
 # ========================================
 # PATIENT 1 - Alice (Hypertension)
 # ========================================
-echo "📝 Génération données Patient 1 (Alice)..."
+echo "Génération données Patient 1 (Alice)..."
 
 # Fréquence cardiaque (7 derniers jours, toutes les heures)
 for i in $(seq 0 168); do
@@ -63,7 +63,7 @@ done
 # ========================================
 # PATIENT 2 - Bob (Diabète)
 # ========================================
-echo "📝 Génération données Patient 2 (Bob)..."
+echo "Génération données Patient 2 (Bob)..."
 
 for i in $(seq 0 168); do
   timestamp=$((NOW - i * HOUR))
@@ -91,7 +91,7 @@ done
 # PATIENTS 3–5
 # ========================================
 for patient_id in 3 4 5; do
-  echo "📝 Génération données Patient $patient_id..."
+  echo "Génération données Patient $patient_id..."
   for i in $(seq 0 100); do
     timestamp=$((NOW - i * HOUR))
     hr=$((60 + RANDOM % 30))
@@ -100,4 +100,4 @@ for patient_id in 3 4 5; do
   done
 done
 
-echo "✅ Données InfluxDB initialisées avec succès !"
+echo "Données InfluxDB initialisées avec succès !"

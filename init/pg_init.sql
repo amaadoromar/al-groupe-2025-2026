@@ -64,7 +64,7 @@ CREATE TABLE alertes (
 );
 
 -- ====================================================
--- 5. RAPPORTS & BILANS (✅ corrigé pour correspondre à la classe Report.java)
+-- 5. RAPPORTS & BILANS (corrigé pour correspondre à la classe Report.java)
 -- ====================================================
 
 CREATE TABLE IF NOT EXISTS reports (

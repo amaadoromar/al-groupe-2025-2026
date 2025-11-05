@@ -210,14 +210,14 @@ public class DataAggregationService {
                 data.getBloodPressureStats().getAverageDiastolic() != null) {
             if (data.getBloodPressureStats().getAverageSystolic() > 140 ||
                     data.getBloodPressureStats().getAverageDiastolic() > 90) {
-                System.out.println("⚠️ Hypertension détectée ce mois-ci.");
+                System.out.println("Hypertension détectée ce mois-ci.");
             }
         }
 
         if (data.getGlucoseStats() != null &&
                 data.getGlucoseStats().getTimeInRange() != null &&
                 data.getGlucoseStats().getTimeInRange() < 70.0) {
-            System.out.println("⚠️ Temps dans la plage (<70%) faible — possible déséquilibre glycémique.");
+            System.out.println("Temps dans la plage (<70%) faible — possible déséquilibre glycémique.");
         }
     }
 

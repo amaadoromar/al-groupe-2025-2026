@@ -22,7 +22,7 @@
                                  │ esante/patient/+/vitals/#
                                  │
                             ┌────▼─────┐
-                            │ Node-RED │
+                            │ Telegraf │
                             │ Streaming│
                             │  Layer   │
                             └────┬─────┘
@@ -77,27 +77,31 @@ Payload:
 }
 ```
 
-### 2. Node-RED Processing
+### 2. Telegraf Processing
 ```
 ┌─────────────┐
 │ MQTT Input  │
+│ Consumer    │
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
 │ Parse JSON  │
+│ Extract Tags│
 └──────┬──────┘
        │
        ▼
 ┌──────────────────────┐
+│ Starlark Processor:  │
 │ Check Conditions:    │
 │ - HR > 150?          │
 │ - Battery < 30?      │
+│ Tag: alert=true/false│
 └──────┬───────────────┘
        │
-       ├─── YES ──▶ Create Alert ──▶ MQTT Notification
+       ├─── alert=true ──▶ MQTT Output ──▶ Notifications
        │
-       └─── NO ───▶ Format Data ──▶ InfluxDB Write
+       └─── alert=false ─▶ InfluxDB Output ──▶ Storage
 ```
 
 ### 3. Alert Notification
@@ -145,7 +149,7 @@ Timestamp: Nanosecond precision
 | Mosquitto  | 1883 | MQTT     | Device connections         |
 | Mosquitto  | 9001 | WS       | WebSocket for browsers     |
 | MQTT UI    | 8080 | HTTP     | Web monitoring interface   |
-| Node-RED   | 1880 | HTTP     | Flow editor & admin        |
+| Telegraf   | N/A  | N/A      | Stream processor (no UI)   |
 | InfluxDB   | 8086 | HTTP     | Database API               |
 
 ## Network Diagram
@@ -156,7 +160,7 @@ Docker Network: esante_network
 ┌────────────────────────────────────────────────────────┐
 │                                                        │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │Simulator │  │ MQTT UI  │  │ Node-RED │           │
+│  │Simulator │  │ MQTT UI  │  │ Telegraf │           │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘           │
 │       │             │              │                  │
 │       └─────────────┼──────────────┘                  │
@@ -170,10 +174,10 @@ Docker Network: esante_network
 │              └─────────────┘                         │
 │                                                        │
 └────────────────────────────────────────────────────────┘
-         │              │              │
-         │              │              │
+         │              │                        │
+         │              │                        │
     Ports Exposed to Host:
-         1883         8080          1880           8086
+         1883         8080                    8086
 ```
 
 ## Alert Trigger Conditions
@@ -208,8 +212,8 @@ alertReason: "High heart rate: 165 BPM, Low battery: 25%"
 ## Performance Characteristics
 
 - **Throughput**: 10 patients × 6 vitals / 10 seconds = 6 messages/second
-- **Latency**: MQTT + Node-RED processing < 100ms
-- **Scalability**: Can handle 100+ patients with current setup
+- **Latency**: MQTT + Telegraf processing < 50ms (lightweight binary)
+- **Scalability**: Can handle 1000+ patients with current setup
 - **Reliability**: QoS 1 ensures message delivery
 - **Data Retention**: InfluxDB indefinite (until manually deleted)
 - **Alert Persistence**: In-memory only (lost on restart)

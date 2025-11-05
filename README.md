@@ -23,7 +23,7 @@ al-groupe-2025-2026/
 
 ### E2E Data Streaming (Complete System)
 
-Run the full end-to-end data pipeline with MQTT, Node-RED, and InfluxDB:
+Run the full end-to-end data pipeline with MQTT, Telegraf, and InfluxDB:
 
 ```bash
 # Start complete system
@@ -32,8 +32,10 @@ docker compose -f docker-compose-e2e.yml up -d
 
 # Access services:
 # - MQTT UI: http://localhost:8080
-# - Node-RED: http://localhost:1880/admin
 # - InfluxDB: http://localhost:8086
+
+# Monitor stream processing logs:
+docker logs -f esante_telegraf
 ```
 
 See [E2E-QUICKSTART.md](E2E-QUICKSTART.md) for detailed instructions.
@@ -89,7 +91,7 @@ See [infrastructure/README.md](infrastructure/README.md) for detailed documentat
 
 - [E2E-QUICKSTART.md](E2E-QUICKSTART.md) - Complete data streaming setup guide
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flows
-- [NODE-RED-GUIDE.md](NODE-RED-GUIDE.md) - Node-RED configuration and debugging
+- [infrastructure/telegraf/TELEGRAF-GUIDE.md](infrastructure/telegraf/TELEGRAF-GUIDE.md) - Telegraf configuration and troubleshooting
 - [infrastructure/README.md](infrastructure/README.md) - Infrastructure components
 
 ## Components

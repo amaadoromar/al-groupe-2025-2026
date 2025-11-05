@@ -5,7 +5,7 @@ This guide helps you start the complete end-to-end data streaming pipeline.
 ## Architecture
 
 ```
-[Simulator] --> [MQTT Broker] --> [Node-RED] --> [InfluxDB]
+[Simulator] --> [MQTT Broker] --> [Telegraf] --> [InfluxDB]
                       |                |
                    [MQTT UI]    [Notifications]
 ```
@@ -32,8 +32,8 @@ docker compose -f docker-compose-e2e.yml up -d
 | Service | URL | Description |
 |---------|-----|-------------|
 | MQTT UI | http://localhost:8080 | Monitor MQTT messages in real-time |
-| Node-RED | http://localhost:1880/admin | View/edit data flows |
 | InfluxDB | http://localhost:8086 | Query time-series data |
+| Telegraf | docker logs -f esante_telegraf | View stream processing logs |
 
 InfluxDB credentials (from `.env`):
 - Username: `admin`
@@ -49,7 +49,7 @@ InfluxDB credentials (from `.env`):
 docker compose -f docker-compose-e2e.yml logs -f
 
 # Specific service
-docker compose -f docker-compose-e2e.yml logs -f node-red
+docker compose -f docker-compose-e2e.yml logs -f telegraf
 docker compose -f docker-compose-e2e.yml logs -f simulator
 ```
 
@@ -79,13 +79,13 @@ from(bucket: "patient_vitals")
 
 ### Normal Vitals Flow
 1. Simulator emits vitals → MQTT topic `esante/patient/{id}/vitals/{type}`
-2. Node-RED receives and checks alert conditions
+2. Telegraf receives and checks alert conditions
 3. If normal → Write to InfluxDB
 4. Data available for queries and dashboards
 
 ### Alert Flow
 1. Simulator emits vitals with HR > 150 or battery < 30%
-2. Node-RED detects alert condition
+2. Telegraf detects alert condition using Starlark processor
 3. Creates notification → MQTT topic `esante/notifications/patient/{id}`
 4. Backend/frontend can subscribe to receive alerts
 
@@ -147,10 +147,15 @@ docker compose -f docker-compose-e2e.yml down -v
 
 ## Troubleshooting
 
-### Node-RED not starting
-Check permissions on `infrastructure/node-red/` directory:
+### Telegraf not processing messages
+Check Telegraf logs for errors:
 ```bash
-sudo chown -R 1000:1000 infrastructure/node-red/
+docker logs esante_telegraf -f
+```
+
+Verify Telegraf configuration:
+```bash
+docker exec esante_telegraf telegraf --test --config /etc/telegraf/telegraf.conf
 ```
 
 ### InfluxDB connection errors
@@ -162,9 +167,12 @@ docker compose -f docker-compose-e2e.yml ps influxdb
 Wait for initialization (first run takes ~30 seconds).
 
 ### No notifications appearing
-1. Check Node-RED logs for errors
-2. Verify flows are deployed: http://localhost:1880/admin
-3. Subscribe to MQTT notifications topic to confirm they're being sent
+1. Check Telegraf logs for alert processing errors
+2. Verify alert conditions are being met (HR > 150, battery < 30%)
+3. Subscribe to MQTT notifications topic to confirm they're being sent:
+```bash
+docker exec esante_mqtt_broker mosquitto_sub -t "esante/notifications/#" -v
+```
 
 ### Simulator not connecting
 1. Check Mosquitto is running and healthy

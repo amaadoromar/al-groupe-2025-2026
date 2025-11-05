@@ -108,7 +108,7 @@ public class PDFExportService {
             addMetric(table, "📅 Alerts",
                     data.getAlertCount() + " (Emergencies: " + data.getEmergencyCount() + ")");
 
-            addMetric(table, "📈 Adherence",
+            addMetric(table, "Adherence",
                     String.format("%.1f%%", data.getOverallAdherenceRate()));
 
             document.add(table.setMarginBottom(20));

@@ -4,12 +4,12 @@ Go-based service that simulates medical devices (watch, BP monitor, glucometer, 
 
 ## Features
 
-- 🏥 **Realistic Vital Signs**: Heart Rate, SpO₂, Blood Pressure, Glucose, Weight, Steps
-- 📱 **Edge Simulation**: Mimics phone aggregation with normalized units, UTC timestamps, and metadata
-- 🚨 **Alert Generation**: Configurable abnormal value injection for testing alert pipelines
-- 🔧 **Fully Configurable**: Patient count, emission rate, alert frequency via environment variables
-- 🐳 **Docker-Ready**: Multi-stage build for minimal image size
-- 📊 **MQTT Publishing**: Messages follow topic structure `esante/patient/{id}/vitals/{type}`
+- **Realistic Vital Signs**: Heart Rate, SpO₂, Blood Pressure, Glucose, Weight, Steps
+- **Edge Simulation**: Mimics phone aggregation with normalized units, UTC timestamps, and metadata
+- **Alert Generation**: Configurable abnormal value injection for testing alert pipelines
+- **Fully Configurable**: Patient count, emission rate, alert frequency via environment variables
+- **Docker-Ready**: Multi-stage build for minimal image size
+- **MQTT Publishing**: Messages follow topic structure `esante/patient/{id}/vitals/{type}`
 
 ## Message Format
 
@@ -195,22 +195,22 @@ Alert values will be outside normal ranges (see table above).
 ## Logs
 
 Simulator logs show:
-- 🚀 Startup configuration
-- ✅ MQTT connection status
-- 📊 Iteration summaries (patients processed, time elapsed)
-- ⚠️ Alert cycle notifications
+- Startup configuration
+- MQTT connection status
+- Iteration summaries (patients processed, time elapsed)
+- Alert cycle notifications
 
 ```
-🚀 Starting eSanté Device & Phone Simulator...
-📊 Configuration:
+Starting eSanté Device & Phone Simulator...
+Configuration:
    MQTT Broker: mosquitto:1883
    Number of Patients: 10
    Emit Interval: 10 seconds
    Alert Interval: every 60 seconds
-✅ Connected to MQTT broker
-📡 Starting vitals simulation...
-⚠️  Alert cycle 6 - generating abnormal values
-📊 Iteration 6 completed (10 patients) - Running for 1m0s
+Connected to MQTT broker
+Starting vitals simulation...
+ Alert cycle 6 - generating abnormal values
+Iteration 6 completed (10 patients) - Running for 1m0s
 ```
 
 ## Troubleshooting

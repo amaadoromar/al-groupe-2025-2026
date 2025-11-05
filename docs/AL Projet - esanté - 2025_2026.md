@@ -230,7 +230,7 @@ On va s'intéresser à **DDD**.
 
 ---
 
-* Il faut absolument **définir le pipeline** :Le **pipeline**, c’est le **cycle de vie de nos données**.✅
+* Il faut absolument **définir le pipeline** :Le **pipeline**, c’est le **cycle de vie de nos données**.
 
 ---
 
