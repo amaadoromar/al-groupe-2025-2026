@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC eâ€‘santÃ© â€“ Rapports</title>
+    <title>POC e-santé – Rapports</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/reports.css" />
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -11,11 +11,13 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC eâ€‘santÃ©</div>
+      <div class="brand">POC e-santé</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
         <a href="doctor.html">Médecin</a>
+        <a href="nurse.html">Infirmier</a>
+        <a href="nurses.html">Infirmiers</a>
         <a href="gateway.html">Passerelle</a>
         <a href="dashboard.html">Tableau de bord</a>
         <a href="reports.html" class="active">Rapports</a>
@@ -24,14 +26,14 @@
 
     <main>
       <section>
-        <h2>Rapports de santÃ©</h2>
+        <h2>Rapports de santé</h2>
         <div class="card row">
           <div>
             <label for="rp-patient">Patient</label>
             <select id="rp-patient"></select>
           </div>
           <div>
-            <label for="rp-window">PÃ©riode</label>
+            <label for="rp-window">Période</label>
             <select id="rp-window">
               <option value="15">15 minutes</option>
               <option value="60" selected>1 heure</option>
@@ -39,7 +41,7 @@
             </select>
           </div>
           <div class="spacer"></div>
-          <button id="rp-generate">GÃ©nÃ©rer le rapport</button>
+          <button id="rp-generate">Générer le rapport</button>
         </div>
 
         <div id="report-preview" class="card"></div>
@@ -55,5 +57,4 @@
     </script>
   </body>
   </html>
-
 

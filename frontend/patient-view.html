@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
@@ -12,7 +12,7 @@
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="patients.html">Patients</a>
-        <a href="doctor.html">Médecin</a>
+        <a href="doctor.html">MÃ©decin</a>`n        <a href="nurse.html">Infirmier</a>`n        <a href="nurses.html">Infirmiers</a>
         <a href="gateway.html">Passerelle</a>
         <a href="dashboard.html">Tableau de bord</a>
         <a href="reports.html">Rapports</a>
@@ -21,7 +21,7 @@
 
     <main class="grid-2">
       <section class="card">
-        <h2>Formulaire médical</h2>
+        <h2>Formulaire mÃ©dical</h2>
         <div class="form-grid">
           <div>
             <label for="vf-fumeur">Fumeur</label>
@@ -32,8 +32,8 @@
             <select id="vf-alcool"><option value="NON">Non</option><option value="OUI">Oui</option></select>
           </div>
           <div>
-            <label for="vf-activite">Activité physique</label>
-            <select id="vf-activite"><option value="PEU">Peu</option><option value="MODEREE">Modérée</option><option value="REGULIERE">Régulière</option></select>
+            <label for="vf-activite">ActivitÃ© physique</label>
+            <select id="vf-activite"><option value="PEU">Peu</option><option value="MODEREE">ModÃ©rÃ©e</option><option value="REGULIERE">RÃ©guliÃ¨re</option></select>
           </div>
           <div>
             <label for="vf-taille">Taille (cm)</label>
@@ -44,15 +44,15 @@
             <input id="vf-poids" type="number" min="0" step="0.1" />
           </div>
           <div>
-            <label for="vf-douleur">Douleur (0–10)</label>
+            <label for="vf-douleur">Douleur (0â€“10)</label>
             <input id="vf-douleur" type="number" min="0" max="10" />
           </div>
           <div style="grid-column:1 / -1">
-            <label for="vf-symptomes">Symptômes actuels</label>
+            <label for="vf-symptomes">SymptÃ´mes actuels</label>
             <textarea id="vf-symptomes" rows="3"></textarea>
           </div>
           <div style="grid-column:1 / -1">
-            <label for="vf-medicaments">Médicaments actuels</label>
+            <label for="vf-medicaments">MÃ©dicaments actuels</label>
             <textarea id="vf-medicaments" rows="3"></textarea>
           </div>
           <div style="grid-column:1 / -1">
@@ -60,7 +60,7 @@
             <textarea id="vf-allergies" rows="2"></textarea>
           </div>
           <div style="grid-column:1 / -1">
-            <label for="vf-antecedents">Antécédents médicaux</label>
+            <label for="vf-antecedents">AntÃ©cÃ©dents mÃ©dicaux</label>
             <textarea id="vf-antecedents" rows="3"></textarea>
           </div>
         </div>
@@ -72,7 +72,7 @@
           <label for="obs-type">Type</label>
           <select id="obs-type"><option value="NOTE">Note</option><option value="QUESTION">Question</option></select>
         </div>
-        <textarea id="obs-content" rows="5" placeholder="Observation ou question… (Ctrl+Entrée pour envoyer)"></textarea>
+        <textarea id="obs-content" rows="5" placeholder="Observation ou questionâ€¦ (Ctrl+EntrÃ©e pour envoyer)"></textarea>
         <div class="actions"><button id="btn-add-obs">Ajouter</button></div>
         <ul id="obs-list" class="list"></ul>
       </section>

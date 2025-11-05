@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>POC e‑santé – Administration</title>
+    <title>POC eâ€‘santÃ© â€“ Administration</title>
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/admin.css" />
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -11,7 +11,7 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">POC e‑santé</div>
+      <div class="brand">POC eâ€‘santÃ©</div>
       <nav class="nav">
         <a href="admin.html">Administration</a>
         <a href="gateway.html">Passerelle</a>
@@ -25,14 +25,14 @@
         <h2>Administration</h2>
         <div class="card" id="who"></div>
 
-        <h3>Créer un utilisateur</h3>
+        <h3>CrÃ©er un utilisateur</h3>
         <form id="user-form" class="card form-grid">
-          <div><label>Prénom</label><input id="u-prenom" required /></div>
+          <div><label>PrÃ©nom</label><input id="u-prenom" required /></div>
           <div><label>Nom</label><input id="u-nom" required /></div>
           <div><label>Email</label><input id="u-email" type="email" required /></div>
           <div><label>Mot de passe</label><input id="u-pass" type="password" required /></div>
           <div>
-            <label>Rôle</label>
+            <label>RÃ´le</label>
             <select id="u-role">
               <option>ADMIN</option>
               <option>DOCTEUR</option>
@@ -41,13 +41,13 @@
               <option>PROCHE</option>
             </select>
           </div>
-          <div class="actions"><button type="submit">Créer</button></div>
+          <div class="actions"><button type="submit">CrÃ©er</button></div>
         </form>
 
-        <h3>Créer une fiche patient</h3>
+        <h3>CrÃ©er une fiche patient</h3>
         <form id="patient-form" class="card form-grid">
           <div>
-            <label>Utilisateur (rôle PATIENT)</label>
+            <label>Utilisateur (rÃ´le PATIENT)</label>
             <select id="p-user"></select>
           </div>
           <div><label>Date de naissance</label><input id="p-naissance" type="date" /></div>
@@ -55,23 +55,23 @@
           <div><label>Taille (cm)</label><input id="p-taille" type="number" /></div>
           <div><label>Poids (kg)</label><input id="p-poids" type="number" step="0.01" /></div>
           <div><label>Pathologie principale</label><input id="p-patho" /></div>
-          <div class="actions"><button type="submit">Créer patient</button></div>
+          <div class="actions"><button type="submit">CrÃ©er patient</button></div>
         </form>
 
-        <h3>Créer un proche</h3>
+        <h3>CrÃ©er un proche</h3>
         <form id="proche-form" class="card form-grid">
           <div>
-            <label>Utilisateur (rôle PROCHE)</label>
+            <label>Utilisateur (rÃ´le PROCHE)</label>
             <select id="pr-user"></select>
           </div>
           <div><label>Patient ID</label><input id="pr-patient-id" type="number" /></div>
           <div><label>Lien</label><input id="pr-lien" /></div>
-          <div class="actions"><button type="submit">Créer proche</button></div>
+          <div class="actions"><button type="submit">CrÃ©er proche</button></div>
         </form>
 
         <div class="card">
           <div class="list-header">
-            <div>Utilisateurs (filtre par rôle)</div>
+            <div>Utilisateurs (filtre par rÃ´le)</div>
             <div class="spacer"></div>
             <select id="filter-role">
               <option value="">Tous</option>

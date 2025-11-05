@@ -71,9 +71,12 @@ export function redirectByRole(role) {
 
 function linkAllowed(role, href) {
   if (href === 'admin.html') return role === 'ADMIN';
-  if (href === 'doctor.html' || href === 'gateway.html' || href === 'patients.html') {
+  if (href === 'doctor.html') return role === 'DOCTEUR';
+  if (href === 'gateway.html' || href === 'patients.html') {
     return role === 'DOCTEUR' || role === 'INFIRMIER';
   }
+  if (href === 'nurses.html') return role === 'DOCTEUR' || role === 'ADMIN';
+  if (href === 'nurse.html') return role === 'INFIRMIER' || role === 'ADMIN';
   return true;
 }
 
@@ -87,6 +90,8 @@ export function applyRoleNav() {
   const user = getUser();
   const nav = document.querySelector('.nav');
   if (!nav || !user) return;
+  // Cleanup accidental literal "`n" artifacts in static HTML
+  try { nav.innerHTML = nav.innerHTML.replace(/`n\s*/g, '\n'); } catch {}
   const role = user.role;
   nav.querySelectorAll('a').forEach(a => {
     const href = a.getAttribute('href');
