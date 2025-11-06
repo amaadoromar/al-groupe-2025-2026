@@ -99,6 +99,6 @@ docker exec -it esante_influxdb influx query 'from(bucket: "patient_vitals") |> 
 
 ## Related Documentation
 
-- [E2E-QUICKSTART.md](../E2E-QUICKSTART.md) - Quick start guide
-- [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture
+- [E2E-QUICKSTART.md](../docs/E2E-QUICKSTART.md) - Quick start guide
+- [ARCHITECTURE.md](../docs/ARCHITECTURE.md) - System architecture
 - [docker-compose-e2e.yml](../docker-compose-e2e.yml) - Docker orchestration

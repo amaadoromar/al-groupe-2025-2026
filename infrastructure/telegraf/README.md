@@ -66,4 +66,4 @@ MQTT (vitals) → Telegraf → [Alert Detection] → MQTT (notifications)
                     InfluxDB (storage)
 ```
 
-For detailed architecture diagrams and data flows, see the main [ARCHITECTURE.md](../../ARCHITECTURE.md).
+For detailed architecture diagrams and data flows, see the main [ARCHITECTURE.md](../../docs/ARCHITECTURE.md).

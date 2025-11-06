@@ -199,4 +199,4 @@ docker compose -f docker-compose-e2e.yml up --build -d simulator
 3. **Production Hardening**: Enable MQTT authentication, secure InfluxDB tokens
 4. **Scaling**: Increase `NUM_PATIENTS` for load testing
 
-For more details, see [infrastructure/README.md](infrastructure/README.md)
+For more details, see [infrastructure/README.md](../infrastructure/README.md)

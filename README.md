@@ -38,7 +38,7 @@ docker compose -f docker-compose-e2e.yml up -d
 docker logs -f esante_telegraf
 ```
 
-See [E2E-QUICKSTART.md](E2E-QUICKSTART.md) for detailed instructions.
+See [E2E-QUICKSTART.md](docs/E2E-QUICKSTART.md) for detailed instructions.
 
 ### Frontend Demo (Standalone)
 
@@ -89,8 +89,8 @@ See [infrastructure/README.md](infrastructure/README.md) for detailed documentat
 
 ## Documentation
 
-- [E2E-QUICKSTART.md](E2E-QUICKSTART.md) - Complete data streaming setup guide
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flows
+- [E2E-QUICKSTART.md](docs/E2E-QUICKSTART.md) - Complete data streaming setup guide
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and data flows
 - [infrastructure/telegraf/TELEGRAF-GUIDE.md](infrastructure/telegraf/TELEGRAF-GUIDE.md) - Telegraf configuration and troubleshooting
 - [infrastructure/README.md](infrastructure/README.md) - Infrastructure components
 
