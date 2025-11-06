@@ -10,11 +10,12 @@ al-groupe-2025-2026/
 ├── backend/               # Spring Boot microservices
 │   ├── monitoring-service/
 │   └── reporting-service/
+│   └── notification-service/
+│   └── identity-service/
 ├── infrastructure/        # Testing and development tools
 │   ├── simulator/        # Go device simulator
 │   ├── mosquitto/        # MQTT broker configuration
 │   └── mqtt-ui/          # Web-based MQTT monitor
-├── notification-service/  # Alert notification service
 ├── init/                 # Database initialization scripts
 └── docs/                 # Project documentation
 ```
@@ -31,20 +32,19 @@ cp .env.e2e .env
 docker compose -f docker-compose-e2e.yml up -d
 
 # Access services:
-# - MQTT UI: http://localhost:8080
 # - InfluxDB: http://localhost:8086
 
 # Monitor stream processing logs:
 docker logs -f esante_telegraf
 ```
 
-See [E2E-QUICKSTART.md](docs/E2E-QUICKSTART.md) for detailed instructions.
+See [E2E-QUICKSTART.md](E2E-QUICKSTART.md) for detailed instructions.
 
 ### Frontend Demo (Standalone)
 
-POC e-santé – Frontend (sans back)
+POC e-santé – Frontend
 
-Ce prototype front (HTML/CSS/JS sans dépendances) qui démontre la chaîne fonctionnelle demandée:
+Ce prototype front (HTML/CSS/JS) qui démontre la chaîne fonctionnelle demandée:
 
 - Inscription d’un nouveau patient par un administrateur
 - Simulation de capteurs (smartphone passerelle) pour 2–3 mesures: rythme cardiaque, SpO₂, température
@@ -53,22 +53,28 @@ Ce prototype front (HTML/CSS/JS sans dépendances) qui démontre la chaîne fonc
 - Génération d’un rapport imprimable/exportable en PDF (via impression navigateur)
 
 Utilisation:
-1) Ouvrir `frontend/index.html` dans un navigateur moderne (Chrome/Edge/Firefox).
+1) Ouvrir `http://localhost:8080/` dans un navigateur moderne (Chrome/Edge/Firefox).
 2) Onglet Administration: créer un patient (au minimum prénom, nom, date de naissance).
 3) Onglet Passerelle: sélectionner le patient, démarrer la simulation. Le bouton «Forcer alerte» introduit des valeurs critiques.
 4) Onglet Tableau de bord: sélectionner le patient pour visualiser les courbes et les alertes. Bouton «Activer notifications» pour recevoir des notifications système.
 5) Onglet Rapports: choisir patient et période, puis «Générer le rapport». Utiliser «Imprimer / Exporter en PDF» pour produire le PDF.
 
 Notes techniques:
-- Aucune dépendance externe; stockage local via `localStorage`.
+-  dépendance externe: PostgreSQL et InfluxDB.
 - Les graphiques sont dessinés en `<canvas>` côté client.
-- Seuils d'alerte: HR < 45 ou > 110, SpO₂ < 90, Température > 38.5°C (modifiables dans `frontend/app.js`).
+- Seuils d'alerte: HR < 45 ou > 110, SpO₂ < 90, Température > 38.5°C.
 
 ### Backend Services
 
 See `backend/` directory for Spring Boot microservices:
 - Monitoring Service (Port 8081)
 - Reporting Service (Port 8082)
+- Identity Service (Port 8083)
+- Notifications Service (Port 8084) 
+
+Frontend :
+
+- Server Nginx (Port 8080)
 
 ```bash
 docker compose up -d
@@ -83,7 +89,6 @@ cd infrastructure
 docker compose up -d
 ```
 
-Access MQTT Web UI at http://localhost:8080
 
 See [infrastructure/README.md](infrastructure/README.md) for detailed documentation.
 
