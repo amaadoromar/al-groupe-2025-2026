@@ -1,7 +1,7 @@
 # eSante - Remote Patient Monitoring Platform
 
 This repository contains a comprehensive e-health monitoring system for remote patient care.
-
+You can consult the detailed technical report in the `docs/` directory.
 ## Project Structure
 
 ```
